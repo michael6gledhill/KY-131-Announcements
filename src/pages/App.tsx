@@ -1,7 +1,7 @@
-
 import React from 'react';
 import AnnouncementsPage from './AnnouncementsPage';
 import CreatorPage from './CreatorPage';
+import Layout from '../components/Layout';
 import '../styles/global.css';
 
 const App: React.FC = () => {
@@ -13,14 +13,9 @@ const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
   return (
-    <div>
-      <nav style={{padding:'1em',background:'#667eea',color:'#fff',display:'flex',gap:'1em'}}>
-        <span style={{fontWeight:700}}>KY-131 Announcements</span>
-        <a href="#announcements" style={{color:'#fff'}}>Announcements</a>
-        <a href="#creator" style={{color:'#fff'}}>Creator</a>
-      </nav>
+    <Layout>
       {page === 'announcements' ? <AnnouncementsPage /> : <CreatorPage />}
-    </div>
+    </Layout>
   );
 };
 export default App;
