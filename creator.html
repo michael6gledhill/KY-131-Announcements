@@ -1037,6 +1037,7 @@ Location: Virtual
             const blocks = text.split(/\n\s*\n/);
             let announcements = [];
             let links = [];
+            let ongoing = [];
             let wing = [];
             let current = {};
             let section = '';
@@ -1046,6 +1047,7 @@ Location: Virtual
                 // Section headers
                 if (/^SQUADRON ANNOUNCEMENTS/i.test(lines[0])) { section = 'squadron'; continue; }
                 if (/^WING AND HIGHER/i.test(lines[0])) { section = 'wing'; continue; }
+                if (/^ONGOING PROGRAMS/i.test(lines[0])) { section = 'ongoing'; continue; }
                 // Announcement block
                 if (/^\d{1,2} [A-Za-z]+ -/.test(lines[0])) {
                     // New announcement
@@ -1060,7 +1062,7 @@ Location: Virtual
                         else if (/^Details:/i.test(l)) current.details = l.replace(/^Details:/i,'').trim();
                         else if (/^Cadets?:/i.test(l)) current.cadets = l.replace(/^Cadets?:/i,'').trim();
                         else if (/^Primary AM:/i.test(l)) current.primaryAM = l.replace(/^Primary AM:/i,'').trim();
-                        else if (/https?:\/\//.test(l)) current.link = l.match(/https?:\/\/\S+/)[0];
+                        else if (/https?:\/+/.test(l)) current.link = l.match(/https?:\/\/\S+/)[0];
                         else if (/NO MEETING/i.test(l)) current.title = 'NO MEETING';
                         else if (current.details) current.details += '\n'+l;
                         else current.details = l;
@@ -1068,14 +1070,20 @@ Location: Virtual
                 } else if (/NO MEETING/i.test(lines[0])) {
                     if (current.date) announcements.push(current);
                     current = { title: 'NO MEETING' };
-                } else if (/https?:\/\//.test(lines[0])) {
-                    links.push(lines[0]);
+                } else if (/https?:\/+/.test(lines[0])) {
+                    // If in ongoing or links section, add to those
+                    if (section === 'ongoing') ongoing.push(lines[0]);
+                    else links.push(lines[0]);
                 } else if (section === 'wing') {
                     wing.push(block);
+                } else if (section === 'ongoing') {
+                    ongoing.push(block);
+                } else if (/facebook|photos|classroom|wreathsacrossamerica/i.test(block)) {
+                    ongoing.push(block);
                 }
             }
             if (current.date) announcements.push(current);
-            return { announcements, links, wing };
+            return { announcements, links, ongoing, wing };
         }
 
         // Generate beautiful, modern inline CSS email HTML
@@ -1102,6 +1110,13 @@ Location: Virtual
                 }
                 html += `</div>`;
             }
+            if (parsed.ongoing && parsed.ongoing.length) {
+                html += `<div style='margin-bottom:40px;'><div style='font-size:1.13em;color:#1e3c72;border-left:6px solid #4caf50;padding-left:18px;margin-bottom:18px;font-weight:700;background:linear-gradient(90deg,#e8f5e9 60%,#fff 100%);border-radius:6px 0 0 6px;'>⏳ Ongoing Programs & Special Links</div>`;
+                for (const o of parsed.ongoing) {
+                    html += `<div style='margin-bottom:12px;color:#333;font-size:1.01em;'>${o.replace(/\n/g,'<br>')}</div>`;
+                }
+                html += `</div>`;
+            }
             if (parsed.links.length) {
                 html += `<div style='margin-bottom:40px;'><div style='font-size:1.13em;color:#1e3c72;border-left:6px solid #764ba2;padding-left:18px;margin-bottom:18px;font-weight:700;background:linear-gradient(90deg,#f3e5f5 60%,#fff 100%);border-radius:6px 0 0 6px;'>🔗 Important Links</div>`;
                 for (const l of parsed.links) {
@@ -1122,7 +1137,7 @@ Location: Virtual
         }
         // ===== AUTHENTICATION =====
         const CORRECT_USERNAME = 'GLR-KY-131';
-        const CORRECT_PASSWORD = 'KYWG-HCP-!@!';
+        const CORRECT_PASSWORD = 'KYWG-HCP-!#!';
 
         function handleLogin(event) {
             event.preventDefault();
