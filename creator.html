@@ -789,13 +789,28 @@
 
         <!-- Navigation Bar -->
         <div class="nav-bar">
-            <a href="index.html" class="nav-link">👁️ View Announcements</a>
-            <div class="nav-separator"></div>
-            <button class="nav-link" onclick="document.getElementById('parserModal').style.display='block'">📋 Import Text</button>
-            <button class="nav-link" onclick="document.getElementById('importModal').style.display='block'">📥 Import JSON</button>
-            <button class="nav-link" onclick="exportAllData()">📤 Export All</button>
-            <div class="stat-box" id="statBox">0 Announcements</div>
-            <button class="logout-button" onclick="logout()">🚪 Logout</button>
+              <a href="index.html" class="nav-link">👁️ View Announcements</a>
+              <div class="nav-separator"></div>
+              <button class="nav-link" onclick="document.getElementById('parserModal').style.display='block'">📋 Import Text</button>
+              <button class="nav-link" onclick="document.getElementById('emailModal').style.display='block'">📧 Paste & Generate Email</button>
+              <button class="nav-link" onclick="document.getElementById('importModal').style.display='block'">📥 Import JSON</button>
+              <button class="nav-link" onclick="exportAllData()">📤 Export All</button>
+              <div class="stat-box" id="statBox">0 Announcements</div>
+              <button class="logout-button" onclick="logout()">🚪 Logout</button>
+            <!-- Paste & Generate Email Modal -->
+            <div id="emailModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-modal" onclick="document.getElementById('emailModal').style.display='none'">&times;</span>
+                    <div class="modal-header">📧 Paste Announcements & Generate Email</div>
+                    <textarea id="emailPasteTextarea" style="width: 100%; height: 300px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: monospace; font-size: 0.9em;" placeholder="Paste your full announcements text here..."></textarea>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button onclick="parseAndGenerateEmail()" class="btn btn-create" style="flex: 1;">Parse & Preview</button>
+                        <button onclick="document.getElementById('emailModal').style.display='none'" class="btn btn-clear" style="flex: 1;">Cancel</button>
+                    </div>
+                    <div id="emailPreview" style="margin-top: 25px;"></div>
+                    <button id="copyEmailBtn" class="btn btn-export" style="display:none; margin-top: 15px; width:100%;">📋 Copy Email HTML</button>
+                </div>
+            </div>
         </div>
 
         <div class="main-content">
@@ -973,6 +988,117 @@ Location: Virtual
     </div>
 
     <script>
+        // ===== EMAIL PASTE & GENERATE =====
+        function parseAndGenerateEmail() {
+            const text = document.getElementById('emailPasteTextarea').value;
+            const parsed = parseFullAnnouncementsText(text);
+            if (parsed.announcements.length === 0) {
+                document.getElementById('emailPreview').innerHTML = '<div style="color:#b71c1c;">No announcements found in pasted text.</div>';
+                document.getElementById('copyEmailBtn').style.display = 'none';
+                return;
+            }
+            // Update app data
+            localStorage.setItem('announcements', JSON.stringify(parsed.announcements));
+            // Show preview
+            const html = generateEmailHTML(parsed);
+            document.getElementById('emailPreview').innerHTML = '<div style="border:1px solid #e0e0e0; border-radius:8px; padding:20px; background:#fff; max-height:350px; overflow:auto;">'+html+'</div>';
+            document.getElementById('copyEmailBtn').style.display = 'block';
+            document.getElementById('copyEmailBtn').onclick = function() {
+                navigator.clipboard.writeText(html);
+                document.getElementById('copyEmailBtn').innerText = '✅ Copied!';
+                setTimeout(()=>{document.getElementById('copyEmailBtn').innerText = '📋 Copy Email HTML';}, 1500);
+            };
+        }
+
+        // AI-powered parser for full text block
+        function parseFullAnnouncementsText(text) {
+            // Split into sections by double newlines
+            const blocks = text.split(/\n\s*\n/);
+            let announcements = [];
+            let links = [];
+            let wing = [];
+            let current = {};
+            let section = '';
+            for (let block of blocks) {
+                const lines = block.trim().split(/\n/).map(l=>l.trim()).filter(Boolean);
+                if (lines.length === 0) continue;
+                // Section headers
+                if (/^SQUADRON ANNOUNCEMENTS/i.test(lines[0])) { section = 'squadron'; continue; }
+                if (/^WING AND HIGHER/i.test(lines[0])) { section = 'wing'; continue; }
+                // Announcement block
+                if (/^\d{1,2} [A-Za-z]+ -/.test(lines[0])) {
+                    // New announcement
+                    if (current.date) announcements.push(current);
+                    current = {};
+                    const m = lines[0].match(/^(\d{1,2} [A-Za-z]+) - (.+)$/);
+                    if (m) { current.date = m[1]; current.title = m[2]; }
+                    for (let i=1; i<lines.length; ++i) {
+                        let l = lines[i];
+                        if (/^Location:/i.test(l)) current.location = l.replace(/^Location:/i,'').trim();
+                        else if (/^UOD:/i.test(l)) current.uod = l.replace(/^UOD:/i,'').trim();
+                        else if (/^Details:/i.test(l)) current.details = l.replace(/^Details:/i,'').trim();
+                        else if (/^Cadets?:/i.test(l)) current.cadets = l.replace(/^Cadets?:/i,'').trim();
+                        else if (/^Primary AM:/i.test(l)) current.primaryAM = l.replace(/^Primary AM:/i,'').trim();
+                        else if (/https?:\/\//.test(l)) current.link = l.match(/https?:\/\/\S+/)[0];
+                        else if (/NO MEETING/i.test(l)) current.title = 'NO MEETING';
+                        else if (current.details) current.details += '\n'+l;
+                        else current.details = l;
+                    }
+                } else if (/NO MEETING/i.test(lines[0])) {
+                    if (current.date) announcements.push(current);
+                    current = { title: 'NO MEETING' };
+                } else if (/https?:\/\//.test(lines[0])) {
+                    links.push(lines[0]);
+                } else if (section === 'wing') {
+                    wing.push(block);
+                }
+            }
+            if (current.date) announcements.push(current);
+            return { announcements, links, wing };
+        }
+
+        // Generate beautiful inline CSS email HTML
+        function generateEmailHTML(parsed) {
+            let html = `<div style="max-width:700px;margin:0 auto;background:white;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.1);padding:30px;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+                <div style="text-align:center;margin-bottom:30px;">
+                    <img src='logo.png' alt='Logo' style='width:70px;height:70px;object-fit:contain;display:block;margin:0 auto 10px auto;'>
+                    <h1 style='color:#1e3c72;font-size:2em;margin:0 0 5px 0;'>KY-131 Heartland Composite Squadron</h1>
+                    <div style='color:#666;font-size:1.1em;'>Squadron Announcements & Events</div>
+                </div>`;
+            if (parsed.announcements.length) {
+                html += `<div style='margin-bottom:35px;'><div style='font-size:1.3em;color:#1e3c72;border-left:5px solid #667eea;padding-left:15px;margin-bottom:20px;font-weight:700;'>📅 Squadron Announcements</div>`;
+                for (const a of parsed.announcements) {
+                    html += `<div style='background:linear-gradient(to right,#f8f9fa 0%,#fff 100%);border-left:4px solid #667eea;padding:18px 18px 12px 18px;margin-bottom:18px;border-radius:8px;'>`;
+                    html += `<div style='font-weight:700;color:#fff;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);font-size:0.95em;padding:5px 12px;border-radius:20px;display:inline-block;margin-bottom:10px;letter-spacing:0.5px;'>${a.date||''}</div>`;
+                    html += `<div style='font-weight:700;color:#1e3c72;font-size:1.2em;margin-bottom:12px;padding-bottom:7px;border-bottom:2px solid #667eea;'>${a.title||''}</div>`;
+                    if(a.location) html += `<div style='display:grid;grid-template-columns:110px 1fr;margin-bottom:10px;gap:10px;padding:7px;background:rgba(255,152,0,0.06);border-radius:6px;align-items:start;border-left:3px solid #ff9800;'><span style='font-weight:700;color:#1e3c72;font-size:0.95em;text-transform:uppercase;letter-spacing:0.5px;'>📍 Location</span><span style='color:#333;font-weight:500;line-height:1.5;'>${a.location}</span></div>`;
+                    if(a.uod) html += `<div style='display:grid;grid-template-columns:110px 1fr;margin-bottom:10px;gap:10px;padding:7px;background:rgba(76,175,80,0.06);border-radius:6px;align-items:start;border-left:3px solid #4caf50;'><span style='font-weight:700;color:#1e3c72;font-size:0.95em;text-transform:uppercase;letter-spacing:0.5px;'>👕 UOD</span><span style='color:#333;font-weight:500;line-height:1.5;'>${a.uod}</span></div>`;
+                    if(a.details) html += `<div style='display:grid;grid-template-columns:110px 1fr;margin-bottom:10px;gap:10px;padding:7px;background:rgba(33,150,243,0.06);border-radius:6px;align-items:start;border-left:3px solid #2196f3;'><span style='font-weight:700;color:#1e3c72;font-size:0.95em;text-transform:uppercase;letter-spacing:0.5px;'>📝 Details</span><span style='color:#333;font-weight:500;line-height:1.5;white-space:pre-line;'>${a.details}</span></div>`;
+                    if(a.cadets) html += `<div style='display:grid;grid-template-columns:110px 1fr;margin-bottom:10px;gap:10px;padding:7px;background:rgba(156,39,176,0.06);border-radius:6px;align-items:start;border-left:3px solid #9c27b0;'><span style='font-weight:700;color:#1e3c72;font-size:0.95em;text-transform:uppercase;letter-spacing:0.5px;'>👥 Cadets</span><span style='color:#333;font-weight:500;line-height:1.5;'>${a.cadets}</span></div>`;
+                    if(a.primaryAM) html += `<div style='display:grid;grid-template-columns:110px 1fr;margin-bottom:10px;gap:10px;padding:7px;background:rgba(156,39,176,0.06);border-radius:6px;align-items:start;border-left:3px solid #9c27b0;'><span style='font-weight:700;color:#1e3c72;font-size:0.95em;text-transform:uppercase;letter-spacing:0.5px;'>👨‍✈️ Primary AM</span><span style='color:#333;font-weight:500;line-height:1.5;'>${a.primaryAM}</span></div>`;
+                    if(a.link) html += `<div style='display:grid;grid-template-columns:110px 1fr;margin-bottom:10px;gap:10px;padding:7px;background:rgba(33,150,243,0.06);border-radius:6px;align-items:start;border-left:3px solid #2196f3;'><span style='font-weight:700;color:#1e3c72;font-size:0.95em;text-transform:uppercase;letter-spacing:0.5px;'>🔗 Link</span><span style='color:#333;font-weight:500;line-height:1.5;'><a href='${a.link}' style='color:#667eea;text-decoration:none;'>${a.link}</a></span></div>`;
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            }
+            if (parsed.links.length) {
+                html += `<div style='margin-bottom:35px;'><div style='font-size:1.1em;color:#1e3c72;border-left:5px solid #764ba2;padding-left:15px;margin-bottom:15px;font-weight:700;'>🔗 Important Links</div>`;
+                for (const l of parsed.links) {
+                    html += `<div style='margin-bottom:10px;'><a href='${l}' style='color:#667eea;text-decoration:none;'>${l}</a></div>`;
+                }
+                html += `</div>`;
+            }
+            if (parsed.wing.length) {
+                html += `<div style='margin-bottom:35px;'><div style='font-size:1.1em;color:#1e3c72;border-left:5px solid #2196f3;padding-left:15px;margin-bottom:15px;font-weight:700;'>🏆 Wing & Higher Command</div>`;
+                for (const w of parsed.wing) {
+                    html += `<div style='margin-bottom:10px;color:#333;'>${w.replace(/\n/g,'<br>')}</div>`;
+                }
+                html += `</div>`;
+            }
+            html += `<div style='background:linear-gradient(135deg,#fff9c4 0%,#fff9e6 100%);border-left:4px solid #fbc02d;padding:18px;margin-bottom:10px;border-radius:8px;'><span style='color:#f57f17;font-weight:600;'>📧 Remember to "Reply All" if you have questions or need clarification on anything listed above!</span></div>`;
+            html += `</div>`;
+            return html;
+        }
         // ===== AUTHENTICATION =====
         const CORRECT_USERNAME = 'GLR-KY-131';
         const CORRECT_PASSWORD = 'KYWG-HCP-!@!';
