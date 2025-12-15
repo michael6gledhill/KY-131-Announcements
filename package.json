@@ -4,5 +4,20 @@
   "description": "Squadron Announcements Management System",
   "homepage": "https://michael6gledhill.github.io/KY-131-Announcements/",
   "keywords": ["CAP", "squadron", "announcements", "KY-131"],
-  "author": "2nd Lt. Michael Gledhill"
+  "author": "C/Capt. Michael Gledhill",
+  "private": true,
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "gh-pages": "^6.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
+  }
 }
