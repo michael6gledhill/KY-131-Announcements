@@ -1,23 +1,24 @@
 import React from 'react';
-import { saveAnnouncements, getAnnouncements } from '../utils/storage';
+import { saveAnnouncements, getAnnouncements, saveFullAnnouncements } from '../utils/storage';
 import { parseFullAnnouncementsText } from '../utils/parser';
 import '../styles/creator.css';
 
 const CreatorPage: React.FC = () => {
   const [rawText, setRawText] = React.useState('');
-  const [preview, setPreview] = React.useState<any[]>([]);
+  const [preview, setPreview] = React.useState<any>({ announcements: [], links: [], ongoing: [], wing: [] });
   const [showPush, setShowPush] = React.useState(false);
   const [parsed, setParsed] = React.useState<any>(null);
 
   const handleParse = () => {
     const parsed = parseFullAnnouncementsText(rawText);
     setParsed(parsed);
-    setPreview(parsed.announcements || []);
+    setPreview(parsed);
     setShowPush(true);
   };
   const handlePush = () => {
     if (parsed && parsed.announcements) {
-      saveAnnouncements(parsed.announcements);
+      saveAnnouncements(parsed.announcements); // legacy
+      saveFullAnnouncements(parsed); // new: save all sections
       setShowPush(false);
     }
   };
@@ -56,22 +57,65 @@ const CreatorPage: React.FC = () => {
         </div>
       )}
       <div className="mt-8">
-        {preview.length === 0 ? (
-          <div className="text-gray-500 italic">No announcements parsed yet.</div>
-        ) : (
-          preview.map((a, i) => (
-            <div className="mb-6 border-l-4 border-blue-400 bg-blue-50 p-4 rounded-lg shadow-sm" key={i}>
-              <div className="font-bold text-blue-700 mb-1">{a.date}</div>
-              <div className="text-lg font-semibold text-blue-900 mb-1">{a.title}</div>
-              {a.location && <div className="mb-1"><span className="font-medium text-gray-700">Location:</span> {a.location}</div>}
-              {a.uod && <div className="mb-1"><span className="font-medium text-gray-700">UOD:</span> {a.uod}</div>}
-              {a.details && <div className="mb-1"><span className="font-medium text-gray-700">Details:</span> {a.details}</div>}
-              {a.cadets && <div className="mb-1"><span className="font-medium text-gray-700">Cadets:</span> {a.cadets}</div>}
-              {a.primaryAM && <div className="mb-1"><span className="font-medium text-gray-700">Primary AM:</span> {a.primaryAM}</div>}
-              {a.link && <div className="mb-1"><span className="font-medium text-gray-700">Link:</span> <a className="text-blue-600 underline" href={a.link}>{a.link}</a></div>}
-            </div>
-          ))
-        )}
+        {/* Announcements Preview */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-blue-700 mb-4">Upcoming Events & Announcements</h2>
+          {preview.announcements.length === 0 ? (
+            <div className="text-gray-500 italic">No announcements parsed yet.</div>
+          ) : (
+            preview.announcements.map((a: any, i: number) => (
+              <div className="mb-6 border-l-4 border-blue-400 bg-blue-50 p-4 rounded-lg shadow-sm" key={i}>
+                <div className="font-bold text-blue-700 mb-1">{a.date}</div>
+                <div className="text-lg font-semibold text-blue-900 mb-1">{a.title}</div>
+                {a.location && <div className="mb-1"><span className="font-medium text-gray-700">Location:</span> {a.location}</div>}
+                {a.uod && <div className="mb-1"><span className="font-medium text-gray-700">UOD:</span> {a.uod}</div>}
+                {a.details && <div className="mb-1"><span className="font-medium text-gray-700">Details:</span> {a.details}</div>}
+                {a.cadets && <div className="mb-1"><span className="font-medium text-gray-700">Cadets:</span> {a.cadets}</div>}
+                {a.primaryAM && <div className="mb-1"><span className="font-medium text-gray-700">Primary AM:</span> {a.primaryAM}</div>}
+                {a.link && <div className="mb-1"><span className="font-medium text-gray-700">Link:</span> <a className="text-blue-600 underline" href={a.link}>{a.link}</a></div>}
+              </div>
+            ))
+          )}
+        </section>
+        {/* Ongoing Items Preview */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-purple-700 mb-4">Ongoing Items</h2>
+          {preview.ongoing.length === 0 ? (
+            <div className="text-gray-500 italic">No ongoing items.</div>
+          ) : (
+            <ul className="list-disc pl-6 space-y-2">
+              {preview.ongoing.map((item: string, i: number) => (
+                <li key={i} className="text-gray-800">{item}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+        {/* Links Preview */}
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold text-green-700 mb-4">Important Links</h2>
+          {preview.links.length === 0 ? (
+            <div className="text-gray-500 italic">No links provided.</div>
+          ) : (
+            <ul className="list-disc pl-6 space-y-2">
+              {preview.links.map((link: string, i: number) => (
+                <li key={i}><a className="text-green-700 underline" href={link} target="_blank" rel="noopener noreferrer">{link}</a></li>
+              ))}
+            </ul>
+          )}
+        </section>
+        {/* Wing Announcements Preview */}
+        <section>
+          <h2 className="text-xl font-semibold text-pink-700 mb-4">Wing & Higher Announcements</h2>
+          {preview.wing.length === 0 ? (
+            <div className="text-gray-500 italic">No wing/higher announcements.</div>
+          ) : (
+            <ul className="list-disc pl-6 space-y-2">
+              {preview.wing.map((item: string, i: number) => (
+                <li key={i} className="text-gray-800">{item}</li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </div>
   );
