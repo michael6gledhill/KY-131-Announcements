@@ -326,81 +326,37 @@
             <!-- Squadron Announcements Section -->
             <div class="section">
                 <div class="section-title">📅 Squadron Announcements</div>
-
-                <div class="announcement">
-                    <div class="announcement-date">15 December</div>
-                    <div class="announcement-title">Emergency Services</div>
-                    <div class="announcement-field location">
-                        <span class="announcement-label">📍 Location</span>
-                        <span class="announcement-value">EKX</span>
-                    </div>
-                    <div class="announcement-field uod">
-                        <span class="announcement-label">👕 UOD</span>
-                        <span class="announcement-value">ABU/OCPs (Bring a fleece jacket, or coat if you don't have a fleece - Stay warm!)</span>
-                    </div>
-                    <div class="announcement-field details">
-                        <span class="announcement-label">📝 Details</span>
-                        <span class="announcement-value">TBA</span>
-                    </div>
-                    <div class="announcement-field cadets">
-                        <span class="announcement-label">👥 Cadets</span>
-                        <span class="announcement-value">C/CMSgt Fruth M.</span>
-                    </div>
-                    <div class="announcement-field cadets">
-                        <span class="announcement-label">👨‍✈️ Primary AM</span>
-                        <span class="announcement-value">Capt Threadgill</span>
-                    </div>
-                </div>
-
-                <div class="announcement">
-                    <div class="announcement-date">22 December</div>
-                    <div class="announcement-title">CDI (Cadet Development Instructor)</div>
-                    <div class="announcement-field location">
-                        <span class="announcement-label">📍 Location</span>
-                        <span class="announcement-value">Virtual</span>
-                    </div>
-                    <div class="announcement-field uod">
-                        <span class="announcement-label">👕 UOD</span>
-                        <span class="announcement-value">Civilian</span>
-                    </div>
-                    <div class="announcement-field details">
-                        <span class="announcement-label">📝 Details</span>
-                        <span class="announcement-value">Meeting will be held Virtually - 45 minute CDI class</span>
-                    </div>
-                    <div class="announcement-field time">
-                        <span class="announcement-label">⏰ Time</span>
-                        <span class="announcement-value">Monday, Dec 22 · 6:30–7:15 PM</span>
-                    </div>
-                    <div class="announcement-field time">
-                        <span class="announcement-label">🔗 Meeting</span>
-                        <span class="announcement-value"><a href="https://meet.google.com/djh-ghwp-vsj" target="_blank">Google Meet Link</a></span>
-                    </div>
-                </div>
-
-                <div class="no-meeting">
-                    ⛔ 29 December - NO MEETING
-                </div>
-
-                <div class="announcement">
-                    <div class="announcement-date">5 January</div>
-                    <div class="announcement-title">PT (Physical Training)</div>
-                    <div class="announcement-field location">
-                        <span class="announcement-label">📍 Location</span>
-                        <span class="announcement-value">Armory</span>
-                    </div>
-                    <div class="announcement-field uod">
-                        <span class="announcement-label">👕 UOD</span>
-                        <span class="announcement-value">PTs</span>
-                    </div>
-                    <div class="announcement-field details">
-                        <span class="announcement-label">📝 Details</span>
-                        <span class="announcement-value">TBA</span>
-                    </div>
-                    <div class="announcement-field cadets">
-                        <span class="announcement-label">👥 Lead</span>
-                        <span class="announcement-value">1st Sgt.</span>
-                    </div>
-                </div>
+                <div id="dynamicAnnouncements"></div>
+                <script>
+                // Dynamically render announcements from localStorage
+                function renderDynamicAnnouncements() {
+                    const container = document.getElementById('dynamicAnnouncements');
+                    let announcements = [];
+                    try {
+                        announcements = JSON.parse(localStorage.getItem('announcements')) || [];
+                    } catch { announcements = []; }
+                    if (!announcements.length) {
+                        container.innerHTML = '<div style="color:#999;text-align:center;padding:40px 0;">No announcements available. Use the creator to add some!</div>';
+                        return;
+                    }
+                    let html = '';
+                    for (const a of announcements) {
+                        html += `<div class="announcement">`;
+                        if(a.date) html += `<div class="announcement-date">${a.date}</div>`;
+                        if(a.title) html += `<div class="announcement-title">${a.title}</div>`;
+                        if(a.location) html += `<div class="announcement-field location"><span class="announcement-label">📍 Location</span><span class="announcement-value">${a.location}</span></div>`;
+                        if(a.uod) html += `<div class="announcement-field uod"><span class="announcement-label">👕 UOD</span><span class="announcement-value">${a.uod}</span></div>`;
+                        if(a.details) html += `<div class="announcement-field details"><span class="announcement-label">📝 Details</span><span class="announcement-value">${a.details.replace(/\n/g,'<br>')}</span></div>`;
+                        if(a.cadets) html += `<div class="announcement-field cadets"><span class="announcement-label">👥 Cadets</span><span class="announcement-value">${a.cadets}</span></div>`;
+                        if(a.primaryAM) html += `<div class="announcement-field cadets"><span class="announcement-label">👨‍✈️ Primary AM</span><span class="announcement-value">${a.primaryAM}</span></div>`;
+                        if(a.link) html += `<div class="announcement-field details"><span class="announcement-label">🔗 Link</span><span class="announcement-value"><a href="${a.link}" target="_blank">${a.link}</a></span></div>`;
+                        if(a.title && /NO MEETING/i.test(a.title)) html += `<div class="no-meeting">⛔ ${a.date ? a.date + ' - ' : ''}NO MEETING</div>`;
+                        html += `</div>`;
+                    }
+                    container.innerHTML = html;
+                }
+                window.addEventListener('DOMContentLoaded', renderDynamicAnnouncements);
+                </script>
             </div>
 
             <!-- Important Links Section -->
