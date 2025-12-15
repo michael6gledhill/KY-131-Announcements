@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/KY-131-Announcements/static/css/main.aa2e9b42.css",
+    "main.css": "/KY-131-Announcements/static/css/main.533cdd2c.css",
     "main.js": "/KY-131-Announcements/static/js/main.051241ee.js",
     "index.html": "/KY-131-Announcements/index.html",
-    "main.aa2e9b42.css.map": "/KY-131-Announcements/static/css/main.aa2e9b42.css.map",
+    "main.533cdd2c.css.map": "/KY-131-Announcements/static/css/main.533cdd2c.css.map",
     "main.051241ee.js.map": "/KY-131-Announcements/static/js/main.051241ee.js.map"
   },
   "entrypoints": [
-    "static/css/main.aa2e9b42.css",
+    "static/css/main.533cdd2c.css",
     "static/js/main.051241ee.js"
   ]
 }
