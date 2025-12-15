@@ -24,7 +24,10 @@ export function parseFullAnnouncementsText(text: string) {
         else if (/^Details:/i.test(l)) current.details = l.replace(/^Details:/i,'').trim();
         else if (/^Cadets?:/i.test(l)) current.cadets = l.replace(/^Cadets?:/i,'').trim();
         else if (/^Primary AM:/i.test(l)) current.primaryAM = l.replace(/^Primary AM:/i,'').trim();
-        else if (/https?:\/+/.test(l)) current.link = l.match(/https?:\/\/\S+/)[0];
+        else if (/https?:\/+/.test(l)) {
+          const match = l.match(/https?:\/\/\S+/);
+          if (match) current.link = match[0];
+        }
         else if (/NO MEETING/i.test(l)) current.title = 'NO MEETING';
         else if (current.details) current.details += '\n'+l;
         else current.details = l;
