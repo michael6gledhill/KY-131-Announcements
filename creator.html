@@ -798,6 +798,58 @@
         </div>
     </div>
 
+    <!-- Text Parser Modal -->
+    <div id="parserModal" class="import-parser-modal">
+        <div class="parser-content">
+            <div class="parser-header">
+                📋 Import from Text
+                <button class="close-parser" onclick="document.getElementById('parserModal').style.display='none'">&times;</button>
+            </div>
+
+            <div class="parser-tabs">
+                <button class="parser-tab-btn active" onclick="switchParserTab(0)">Paste Text</button>
+                <button class="parser-tab-btn" onclick="switchParserTab(1)">Preview</button>
+            </div>
+
+            <div class="parser-tab-content active" id="pasteTab">
+                <div class="parse-info">
+                    💡 Paste squadron announcements in any format. The system will automatically parse and extract announcement details.
+                </div>
+                <textarea id="parserTextarea" class="paste-textarea" placeholder="Paste your announcements text here...
+
+Example format:
+15 December - Emergency Services
+Location: EKX
+UOD: ABU/OCPs
+Details: TBA
+
+22 December - CDI
+Location: Virtual
+..."></textarea>
+                <div class="parser-buttons">
+                    <button class="parse-button" onclick="parseAnnouncements()">🔍 Parse Text</button>
+                </div>
+                <div class="parser-help-text">
+                    <strong>Supported formats:</strong><br>
+                    • Date - Title (e.g., "15 December - Emergency Services")<br>
+                    • Key: Value pairs (e.g., "Location: EKX")<br>
+                    • Multi-line details<br>
+                    • Links automatically detected (http/https)<br>
+                    • Handles "NO MEETING" entries
+                </div>
+            </div>
+
+            <div class="parser-tab-content" id="previewTab">
+                <div class="parse-info" id="parseStatus"></div>
+                <div class="preview-announcements" id="previewList"></div>
+                <div class="parser-buttons">
+                    <button class="parse-button" onclick="importParsedAnnouncements()" id="importParsedBtn" style="display:none;">✓ Import All</button>
+                    <button class="parse-button" style="background: #999;" onclick="switchParserTab(0)">← Back to Paste</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const form = document.getElementById('announcementForm');
         const previewContent = document.getElementById('previewContent');
@@ -813,6 +865,7 @@
         let announcements = JSON.parse(localStorage.getItem('announcements')) || [];
         let currentFilter = 'all';
         let editingId = null;
+        let parsedAnnouncements = [];
 
         // Form inputs
         const categoryInput = document.getElementById('category');
@@ -824,6 +877,182 @@
         const cadetsInput = document.getElementById('cadets');
         const primaryAMInput = document.getElementById('primaryAM');
         const linkInput = document.getElementById('link');
+
+        // ===== TEXT PARSER FUNCTIONS =====
+        function switchParserTab(tabIndex) {
+            const tabs = document.querySelectorAll('.parser-tab-content');
+            const buttons = document.querySelectorAll('.parser-tab-btn');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            tabs[tabIndex].classList.add('active');
+            buttons[tabIndex].classList.add('active');
+        }
+
+        function parseAnnouncements() {
+            const text = document.getElementById('parserTextarea').value;
+            if (!text.trim()) {
+                alert('Please paste some text first');
+                return;
+            }
+
+            parsedAnnouncements = [];
+            const lines = text.split('\n');
+            let currentAnnouncement = null;
+            let inDetails = false;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // Skip empty lines
+                if (!line) continue;
+
+                // Check for date - title pattern (e.g., "15 December - Emergency Services")
+                const dateMatch = line.match(/^(.+?)\s*-\s*(.+)$/);
+                if (dateMatch && !line.includes(':')) {
+                    // Save previous announcement
+                    if (currentAnnouncement) {
+                        parsedAnnouncements.push(currentAnnouncement);
+                    }
+
+                    // Start new announcement
+                    currentAnnouncement = {
+                        id: Date.now() + Math.random(),
+                        category: 'Squadron Announcements',
+                        date: dateMatch[1].trim(),
+                        title: dateMatch[2].trim(),
+                        location: '',
+                        uod: '',
+                        details: '',
+                        cadets: '',
+                        primaryAM: '',
+                        link: ''
+                    };
+                    inDetails = false;
+                    continue;
+                }
+
+                // Check for "NO MEETING" entries
+                if (line.toUpperCase().includes('NO MEETING')) {
+                    if (currentAnnouncement) {
+                        parsedAnnouncements.push(currentAnnouncement);
+                    }
+                    currentAnnouncement = {
+                        id: Date.now() + Math.random(),
+                        category: 'Squadron Announcements',
+                        date: line.replace(/⛔\s*/g, '').trim(),
+                        title: 'NO MEETING',
+                        location: '',
+                        uod: '',
+                        details: 'No meeting scheduled',
+                        cadets: '',
+                        primaryAM: '',
+                        link: ''
+                    };
+                    parsedAnnouncements.push(currentAnnouncement);
+                    currentAnnouncement = null;
+                    continue;
+                }
+
+                if (!currentAnnouncement) continue;
+
+                // Check for key: value pairs
+                const fieldMatch = line.match(/^([^:]+):\s*(.*)$/);
+                if (fieldMatch) {
+                    const key = fieldMatch[1].trim().toLowerCase();
+                    const value = fieldMatch[2].trim();
+
+                    if (key.includes('location')) {
+                        currentAnnouncement.location = value;
+                    } else if (key.includes('uod')) {
+                        currentAnnouncement.uod = value;
+                    } else if (key.includes('detail')) {
+                        currentAnnouncement.details = value;
+                        inDetails = true;
+                    } else if (key.includes('cadet')) {
+                        currentAnnouncement.cadets = value;
+                    } else if (key.includes('primary') || key.includes('am')) {
+                        currentAnnouncement.primaryAM = value;
+                    } else {
+                        // Unknown key, add to details
+                        if (currentAnnouncement.details) {
+                            currentAnnouncement.details += '\n' + line;
+                        } else {
+                            currentAnnouncement.details = line;
+                        }
+                    }
+                    inDetails = false;
+                } else if (inDetails || (currentAnnouncement && line.length > 0)) {
+                    // Multi-line details or additional info
+                    if (currentAnnouncement.details) {
+                        currentAnnouncement.details += '\n' + line;
+                    } else {
+                        currentAnnouncement.details = line;
+                    }
+                }
+
+                // Check for URLs
+                const urlMatch = line.match(/(https?:\/\/[^\s]+)/g);
+                if (urlMatch && !currentAnnouncement.link) {
+                    currentAnnouncement.link = urlMatch[0];
+                }
+            }
+
+            // Don't forget the last announcement
+            if (currentAnnouncement) {
+                parsedAnnouncements.push(currentAnnouncement);
+            }
+
+            // Show preview
+            showParsePreview();
+        }
+
+        function showParsePreview() {
+            const previewList = document.getElementById('previewList');
+            const parseStatus = document.getElementById('parseStatus');
+            const importBtn = document.getElementById('importParsedBtn');
+
+            if (parsedAnnouncements.length === 0) {
+                parseStatus.innerHTML = '⚠️ No announcements found. Try pasting text with dates and titles.';
+                previewList.innerHTML = '';
+                importBtn.style.display = 'none';
+                return;
+            }
+
+            parseStatus.innerHTML = `✅ Found <strong>${parsedAnnouncements.length}</strong> announcement(s) ready to import`;
+            
+            previewList.innerHTML = parsedAnnouncements.map((ann, idx) => `
+                <div class="preview-item">
+                    <div class="preview-item-title">${idx + 1}. ${ann.date} - ${ann.title}</div>
+                    ${ann.location ? `<div class="preview-item-field"><strong>Location:</strong> ${ann.location}</div>` : ''}
+                    ${ann.uod ? `<div class="preview-item-field"><strong>UOD:</strong> ${ann.uod}</div>` : ''}
+                    ${ann.details ? `<div class="preview-item-field"><strong>Details:</strong> ${ann.details.substring(0, 50)}${ann.details.length > 50 ? '...' : ''}</div>` : ''}
+                    ${ann.link ? `<div class="preview-item-field"><strong>Link:</strong> ${ann.link.substring(0, 40)}...</div>` : ''}
+                </div>
+            `).join('');
+
+            importBtn.style.display = 'block';
+            switchParserTab(1);
+        }
+
+        function importParsedAnnouncements() {
+            announcements = [...parsedAnnouncements, ...announcements];
+            localStorage.setItem('announcements', JSON.stringify(announcements));
+            document.getElementById('parserModal').style.display = 'none';
+            document.getElementById('parserTextarea').value = '';
+            parsedAnnouncements = [];
+            
+            updateCategoryTabs();
+            displayAnnouncements();
+            updateStats();
+            
+            successMessage.textContent = `✓ Successfully imported ${parsedAnnouncements.length} announcements!`;
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
 
         // Real-time preview
         function updatePreview() {
