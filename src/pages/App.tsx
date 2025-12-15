@@ -2,6 +2,7 @@ import React from 'react';
 import AnnouncementsPage from './AnnouncementsPage';
 import CreatorPage from './CreatorPage';
 import Layout from '../components/Layout';
+import '../styles/tailwind.css';
 import '../styles/global.css';
 
 const App: React.FC = () => {
