@@ -657,10 +657,131 @@
             margin-top: 10px;
             line-height: 1.5;
         }
+
+        .login-modal {
+            display: flex;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-modal-content {
+            background-color: white;
+            padding: 50px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .login-modal-content h2 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .login-modal-content p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .login-form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .login-form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .login-form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-error {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .logout-button {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-left: auto;
+        }
+
+        .logout-button:hover {
+            background: #f57c00;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-modal-content">
+            <h2>🔐 Creator Login</h2>
+            <p>Enter your credentials to create and manage announcements</p>
+            <div class="login-error" id="loginError">Invalid username or password</div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="login-form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="login-form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="login-button">Login</button>
+            </form>
+        </div>
+    </div>
+    <div class="container" id="mainContainer" style="display: none;">
         <div class="header">
             <h1>📝 KY-131 Announcements Creator</h1>
             <p>Create and manage squadron announcements with ease</p>
@@ -674,6 +795,7 @@
             <button class="nav-link" onclick="document.getElementById('importModal').style.display='block'">📥 Import JSON</button>
             <button class="nav-link" onclick="exportAllData()">📤 Export All</button>
             <div class="stat-box" id="statBox">0 Announcements</div>
+            <button class="logout-button" onclick="logout()">🚪 Logout</button>
         </div>
 
         <div class="main-content">
@@ -851,6 +973,54 @@ Location: Virtual
     </div>
 
     <script>
+        // ===== AUTHENTICATION =====
+        const CORRECT_USERNAME = 'GLR-KY-131';
+        const CORRECT_PASSWORD = 'KYWG-HCP-!@!';
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginError = document.getElementById('loginError');
+
+            if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
+                // Successful login
+                localStorage.setItem('isLoggedIn', 'true');
+                loginError.style.display = 'none';
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                initializePage();
+            } else {
+                // Failed login
+                loginError.style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('isLoggedIn');
+                document.getElementById('loginModal').style.display = 'flex';
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        function checkLogin() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('mainContainer').style.display = 'block';
+            } else {
+                document.getElementById('loginModal').style.display = 'flex';
+                document.getElementById('mainContainer').style.display = 'none';
+            }
+        }
+
+        // ===== PAGE INITIALIZATION =====
+        function initializePage() {
         const form = document.getElementById('announcementForm');
         const previewContent = document.getElementById('previewContent');
         const announcementsList = document.getElementById('announcementsList');
@@ -1360,6 +1530,10 @@ Location: Virtual
         displayAnnouncements();
         updatePreview();
         updateStats();
+        }
+
+        // Check login status on page load
+        checkLogin();
     </script>
 </body>
 </html>
