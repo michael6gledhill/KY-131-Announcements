@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KY-131 Heartland Composite Squadron - Announcements</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 5px solid #ffd700;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header h1::before {
+            content: '';
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            background-image: url('logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 5px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 45px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #1e3c72;
+            border-left: 5px solid #667eea;
+            padding-left: 15px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .announcement {
+            background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .announcement:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .announcement-date {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            color: #2a5298;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .announcement-field {
+            display: flex;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .announcement-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 100px;
+        }
+
+        .announcement-value {
+            color: #666;
+            margin-left: 10px;
+            flex: 1;
+        }
+
+        .no-meeting {
+            background: linear-gradient(to right, #fff3cd 0%, #fffbf0 100%);
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-left: 4px solid #764ba2;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .info-box h4 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 25px 30px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .social-links a {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .social-links a:hover {
+            background: #764ba2;
+            color: white;
+            text-decoration: none;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .positions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .position-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .announcement-field {
+                flex-direction: column;
+            }
+
+            .announcement-label {
+                margin-bottom: 5px;
+            }
+
+            .announcement-value {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>KY-131 Heartland Composite Squadron</h1>
+            <p>Squadron Announcements & Events</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Civil Air Patrol - Kentucky Wing</p>
+        </div>
+
+        <!-- Navigation -->
+        <div style="background: #f9f9f9; padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="index.html" style="padding: 10px 15px; background: #667eea; color: white; border-radius: 5px; text-decoration: none; font-weight: 600;">👁️ View All</a>
+            <a href="creator.html" style="padding: 10px 15px; background: #764ba2; color: white; border-radius: 5px; text-decoration: none; font-weight: 600;">✏️ Create</a>
+            <a href="email-template.html" style="padding: 10px 15px; background: #ff9800; color: white; border-radius: 5px; text-decoration: none; font-weight: 600;">📧 Email</a>
+        </div>
+
+        <div class="content">
+            <!-- Squadron Announcements Section -->
+            <div class="section">
+                <div class="section-title">📅 Squadron Announcements</div>
+
+                <div class="announcement">
+                    <div class="announcement-date">15 December</div>
+                    <div class="announcement-title">Emergency Services</div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Location:</span>
+                        <span class="announcement-value">EKX</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">UOD:</span>
+                        <span class="announcement-value">ABU/OCPs (Bring a fleece jacket, or coat if you don't have a fleece - Stay warm!)</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Details:</span>
+                        <span class="announcement-value">TBA</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Cadets:</span>
+                        <span class="announcement-value">C/CMSgt Fruth M.</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Primary AM:</span>
+                        <span class="announcement-value">Capt Threadgill</span>
+                    </div>
+                </div>
+
+                <div class="announcement">
+                    <div class="announcement-date">22 December</div>
+                    <div class="announcement-title">CDI (Cadet Development Instructor)</div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Location:</span>
+                        <span class="announcement-value">Virtual</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">UOD:</span>
+                        <span class="announcement-value">Civilian</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Details:</span>
+                        <span class="announcement-value">Meeting will be held Virtually - 45 minute CDI class</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Time:</span>
+                        <span class="announcement-value">Monday, Dec 22 · 6:30–7:15 PM</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Join Meeting:</span>
+                        <span class="announcement-value"><a href="https://meet.google.com/djh-ghwp-vsj" target="_blank">Google Meet Link</a></span>
+                    </div>
+                </div>
+
+                <div class="no-meeting">
+                    ⛔ 29 December - NO MEETING
+                </div>
+
+                <div class="announcement">
+                    <div class="announcement-date">5 January</div>
+                    <div class="announcement-title">PT (Physical Training)</div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Location:</span>
+                        <span class="announcement-value">Armory</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">UOD:</span>
+                        <span class="announcement-value">PTs</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Details:</span>
+                        <span class="announcement-value">TBA</span>
+                    </div>
+                    <div class="announcement-field">
+                        <span class="announcement-label">Lead:</span>
+                        <span class="announcement-value">1st Sgt.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Links Section -->
+            <div class="section">
+                <div class="section-title">🔗 Important Links & Resources</div>
+
+                <div class="info-box">
+                    <h4>📘 Squadron Facebook Group</h4>
+                    <p>Join our squadron's private Facebook group for updates, photos, and community engagement.</p>
+                    <p><strong>Note:</strong> This group is for current members and parents only. If your last name is different from your cadet's last name, reach out to 2nd Lt. Gledhill for approval.</p>
+                    <a href="https://www.facebook.com/groups/2148921918874572/?should_open_composer=true" target="_blank" class="cta-button">Join Facebook Group</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>📸 Photo Gallery</h4>
+                    <p>View photos from past events and squadron activities. We invite you to share photos on your personal social media.</p>
+                    <a href="https://photos.cap.gov/Great-Lakes-Region/Kentucky-Wing/Squadrons/Heartland-Composite-Squadron-GLR-KY-131/2025" target="_blank" class="cta-button">View Photos</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>🛩️ sUAS Course - ONGOING (All Members)</h4>
+                    <p>For those interested in the sUAS Technician and Mission Pilot courses, follow the Google Classroom link below for instructions on the program:</p>
+                    <a href="https://classroom.google.com/c/NDQ1ODk4OTA0MDY4?cjc=wsiqpag" target="_blank" class="cta-button">Access Google Classroom</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>🎄 Wreaths Across America – ONGOING (All Members)</h4>
+                    <p>Please continue to promote the sponsorship of WAA wreaths throughout the year.</p>
+                    <p><strong>Benefits:</strong> Each wreath purchased using our landing page or QR code generates $5 for KY-131</p>
+                    <a href="https://www.wreathsacrossamerica.org/pages/170868/Overview/?relatedId=16095" target="_blank" class="cta-button">Support WAA</a>
+                </div>
+            </div>
+
+            <!-- Wing and Higher Command Section -->
+            <div class="section">
+                <div class="section-title">🏆 Wing & Higher Command Announcements</div>
+
+                <div class="info-box">
+                    <h4>2026 OHWG Encampment Cadet Cadre Applications</h4>
+                    <p><strong>Deadline:</strong> January 23, 2026</p>
+                    <p><strong>Eligibility:</strong> Open to all cadets who have completed their basic encampment and will be Staff Sgt. or above by June 2026.</p>
+                    <p><strong>Why Apply:</strong> With proximity to Wright-Patterson Air Force Base, this encampment provides awesome opportunities for both students and cadre.</p>
+                    <p><strong>Encampment Dates:</strong> June 6-13, 2026</p>
+                    
+                    <h4 style="margin-top: 15px; margin-bottom: 10px;">Available Positions:</h4>
+                    <div class="positions-list">
+                        <div class="position-item">• Cadet Training Squadron Commanders</div>
+                        <div class="position-item">• Training & Support Squadron Deputy Commanders</div>
+                        <div class="position-item">• Squadron First Sergeants</div>
+                        <div class="position-item">• Flight Commanders</div>
+                        <div class="position-item">• Flight Sergeants</div>
+                        <div class="position-item">• Administration Staff</div>
+                        <div class="position-item">• Curriculum and Plans Staff</div>
+                        <div class="position-item">• Health Support Staff</div>
+                        <div class="position-item">• Logistics Staff</div>
+                        <div class="position-item">• Public Affairs Staff</div>
+                    </div>
+                    
+                    <p style="margin-top: 15px; background: #fff3cd; padding: 10px; border-radius: 5px; color: #856404;">
+                        <strong>Important:</strong> All applicants must attend staff selection at Camp Perry on <strong>February 20-22, 2026</strong>. We are planning to take the squadron van to transport cadets if there is a need.
+                    </p>
+                    
+                    <a href="https://forms.gle/2SSeARZ5ZQV4c5LR9" target="_blank" class="cta-button">Apply Now</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>KYWG Monthly Virtual Emergency Services Meeting</h4>
+                    <p><strong>Schedule:</strong> Every second Sunday from 4:00-5:00 PM</p>
+                    <p><strong>How to Join:</strong> Check first with your squadron commander or supervising commander (for cadets), then email Capt. Lense and cc your leadership: <strong>mlense@kywg.cap.gov</strong></p>
+                    <a href="https://www.gocivilairpatrol.com/programs/emergency-services" target="_blank" class="cta-button">Learn More About ES</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>December 15 - February 28: NCSA Applications</h4>
+                    <p>Applications for <strong>2026 Summer National Cadet Special Activities (NCSAs)</strong> are scheduled to open on <strong>December 15 at 12:00 PM Central</strong>.</p>
+                    <p>Mark your calendars and don't miss this opportunity!</p>
+                    <a href="http://ncsas.com" target="_blank" class="cta-button">Learn About NCSAs</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>December 28 - January 3: Southeast Region Encampment</h4>
+                    <p><strong>Location:</strong> Maxwell AFB, Alabama</p>
+                    <p><strong>Who Should Apply:</strong> Cadets who were not able to attend summer encampment but want to be eligible for NCSAs next summer should consider this winter encampment.</p>
+                    <p><strong>Staffing:</strong> Lt. Melanie Gledhill will be staffing as part of the PA team.</p>
+                    <a href="https://ser.cap.gov/winter-activities/ser-encampment" target="_blank" class="cta-button">View Details</a>
+                </div>
+
+                <div class="info-box">
+                    <h4>March 20-22: Kentucky Wing Annual Conference</h4>
+                    <p><strong>Location:</strong> Bluegrass Convention Center, 1950 Newton Pike, Suite 101, Lexington, KY 40511</p>
+                    
+                    <h4 style="margin-top: 15px; margin-bottom: 10px;">Early Registration is OPEN for 2026 KYWG Conference!</h4>
+                    <p>Register in eServices Registration Zone <strong>before December 31</strong> and <strong>save $5 off</strong> the full ticket price.</p>
+                    <p>Get your Full Conference Ticket now for a weekend packed with:</p>
+                    <ul>
+                        <li>Great speakers</li>
+                        <li>Learning opportunities</li>
+                        <li>Meals (including Saturday banquet)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="info-box" style="background: linear-gradient(135deg, #fff9c4 0%, #fff9e6 100%); border-left-color: #fbc02d;">
+                <p style="color: #f57f17; font-weight: 600; margin: 0;">
+                    📧 Remember to "Reply All" if you have questions or need clarification on anything listed above!
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 KY-131 Heartland Composite Squadron | Civil Air Patrol - Kentucky Wing</p>
+            <p style="margin-top: 10px; font-size: 0.85em; color: #999;">
+                Last Updated: December 15, 2025
+            </p>
+        </div>
+    </div>
+</body>
+</html>
