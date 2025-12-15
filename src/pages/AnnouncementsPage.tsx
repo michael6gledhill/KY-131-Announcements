@@ -1,9 +1,21 @@
+
 import React from 'react';
 import { getAnnouncements } from '../utils/storage';
 import '../styles/announcements.css';
 
+type Announcement = {
+  date?: string;
+  title?: string;
+  location?: string;
+  uod?: string;
+  details?: string;
+  cadets?: string;
+  primaryAM?: string;
+  link?: string;
+};
+
 const AnnouncementsPage: React.FC = () => {
-  const [announcements, setAnnouncements] = React.useState(getAnnouncements());
+  const [announcements, setAnnouncements] = React.useState<Announcement[]>(getAnnouncements());
   React.useEffect(() => {
     const onStorage = () => setAnnouncements(getAnnouncements());
     window.addEventListener('storage', onStorage);
@@ -13,7 +25,7 @@ const AnnouncementsPage: React.FC = () => {
     <div className="announcements-container">
       <h1>Squadron Announcements</h1>
       {announcements.length === 0 ? <div>No announcements yet.</div> : (
-        announcements.map((a, i) => (
+        announcements.map((a: Announcement, i: number) => (
           <div className="announcement" key={i}>
             <div className="date">{a.date}</div>
             <div className="title">{a.title}</div>

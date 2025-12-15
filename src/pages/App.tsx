@@ -1,11 +1,12 @@
+
 import React from 'react';
 import AnnouncementsPage from './AnnouncementsPage';
 import CreatorPage from './CreatorPage';
 import '../styles/global.css';
 
-function App() {
+const App: React.FC = () => {
   // Simple router: show either announcements or creator based on hash
-  const [page, setPage] = React.useState(window.location.hash.replace('#','') || 'announcements');
+  const [page, setPage] = React.useState<string>(window.location.hash.replace('#','') || 'announcements');
   React.useEffect(() => {
     const onHashChange = () => setPage(window.location.hash.replace('#','') || 'announcements');
     window.addEventListener('hashchange', onHashChange);
@@ -21,5 +22,5 @@ function App() {
       {page === 'announcements' ? <AnnouncementsPage /> : <CreatorPage />}
     </div>
   );
-}
+};
 export default App;
