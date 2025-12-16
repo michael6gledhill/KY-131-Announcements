@@ -103,11 +103,6 @@
     <a href="admin.html" style="color:#001489; font-weight:600; text-decoration:underline;">Admin Login</a>
   </div>
   <script>
-    // --- JSONBin.io Config ---
-    const JSONBIN_API_KEY = 'YOUR_API_KEY_HERE'; // <-- Replace with your JSONBin.io secret key
-    const JSONBIN_BIN_ID = 'YOUR_BIN_ID_HERE';   // <-- Replace with your Bin ID
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`;
-
     // Template rendering functions
     function renderMeeting(m) {
       const t = m.template || 'card';
@@ -150,18 +145,20 @@
       return `<div class="announcement">${w.title}</div>`;
     }
 
-    // Load announcements data from JSONBin.io
-    async function loadDataAndRender() {
-      let data = { meetings: [], general: '', opportunities: [], wing: [] };
-      try {
-        const res = await fetch(JSONBIN_URL, {
-          headers: { 'X-Master-Key': JSONBIN_API_KEY }
-        });
-        if (res.ok) {
-          const json = await res.json();
-          data = json.record;
-        }
-      } catch (e) { /* fallback to empty */ }
+    // Load announcements data from localStorage or use defaults
+    function getData() {
+      const data = localStorage.getItem('announcementsData');
+      if (data) return JSON.parse(data);
+      // Default data structure
+      return {
+        meetings: [],
+        general: '',
+        opportunities: [],
+        wing: []
+      };
+    }
+    function renderAll() {
+      const data = getData();
       // Render meetings
       const meetingsSection = document.getElementById('meetings-section');
       meetingsSection.innerHTML = '<h2>Upcoming Squadron Meetings</h2>' + (data.meetings||[]).map(renderMeeting).join('');
@@ -173,7 +170,7 @@
       document.getElementById('wing-section').innerHTML = '<h2>Wing & Higher Command Announcements</h2>' + (data.wing||[]).map(renderAnnouncement).join('');
     }
     // Run on page load
-    loadDataAndRender();
+    renderAll();
   </script>
 </body>
 </html>
