@@ -49,7 +49,71 @@
       <div style="font-size:0.95em;color:#888;margin-top:6px;">This preview updates as you edit below.</div>
     </div>
     <label style="display:block;margin-bottom:12px;"><input type="checkbox" id="view-css-toggle" onchange="toggleViewCSS()"> View as Inline CSS (Preview)</label>
+    <button type="button" id="export-html-btn" style="margin-bottom:18px;float:right;">Export HTML for Email</button>
     <form id="editor-form" autocomplete="off">
+          // Export HTML logic
+          document.getElementById('export-html-btn').onclick = function() {
+            // Get the current data
+            const data = getData();
+            // Use the same rendering as index.html
+            function renderMeeting(m) {
+              const t = m.template || 'card';
+              if (m.noMeeting) {
+                if (t === 'highlight') {
+                  return `<div class="meeting no-meeting" style="background:linear-gradient(135deg,#fff3cd 0%,#fffbea 100%);border-left:5px solid #FFCD00;text-align:center;font-size:1.3em;font-weight:800;color:#856404;box-shadow:0 4px 15px rgba(0,0,0,0.08);">NO MEETING</div>`;
+                }
+                return `<div class="meeting no-meeting">NO MEETING</div>`;
+              }
+              if (t === 'card') {
+                return `<div class="meeting"><h3>${m.date} - ${m.title}</h3><div><strong>Location:</strong> ${m.location}</div><div><strong>UOD:</strong> ${m.uod}</div><div><strong>Details:</strong> ${m.details}</div><div><strong>Cadets:</strong> ${m.cadets}</div><div><strong>Primary AM:</strong> ${m.am}</div></div>`;
+              } else if (t === 'simple') {
+                return `<div class="meeting" style="background:#f4f8ff;border-left:3px solid #003ab8;"><strong>${m.date}:</strong> ${m.title} (${m.location})</div>`;
+              } else if (t === 'highlight') {
+                return `<div class="meeting" style="background:linear-gradient(135deg,#e0ffe0 0%,#f9fff9 100%);border-left:5px solid #28a745;"><h3 style="color:#28a745;">${m.title}</h3><div><strong>Date:</strong> ${m.date}</div><div><strong>Location:</strong> ${m.location}</div></div>`;
+              }
+              return `<div class="meeting">${m.title}</div>`;
+            }
+            function renderOpportunity(o) {
+              const t = o.template || 'card';
+              if (t === 'card') {
+                return `<div class="opportunity"><h3>${o.title}</h3><div><strong>Open to:</strong> ${o.openTo}</div><div>${o.details}</div>${o.link ? `<div><a href="${o.link}" target="_blank">${o.linkText}</a></div>` : ''}</div>`;
+              } else if (t === 'simple') {
+                return `<div class="opportunity" style="background:#f4f8ff;border-left:3px solid #003ab8;"><strong>${o.title}</strong> - ${o.details}</div>`;
+              } else if (t === 'highlight') {
+                return `<div class="opportunity" style="background:linear-gradient(135deg,#fffbe0 0%,#fff9e6 100%);border-left:5px solid #FFCD00;"><h3 style="color:#FFCD00;">${o.title}</h3><div>${o.details}</div></div>`;
+              }
+              return `<div class="opportunity">${o.title}</div>`;
+            }
+            function renderAnnouncement(w) {
+              const t = w.template || 'card';
+              if (t === 'card') {
+                return `<div class="announcement"><h3>${w.title}</h3><div>${w.details}</div></div>`;
+              } else if (t === 'simple') {
+                return `<div class="announcement" style="background:#f4f8ff;border-left:3px solid #003ab8;"><strong>${w.title}:</strong> ${w.details}</div>`;
+              } else if (t === 'highlight') {
+                return `<div class="announcement" style="background:linear-gradient(135deg,#ffe0e0 0%,#fff9f9 100%);border-left:5px solid #BA0C2F;"><h3 style="color:#BA0C2F;">${w.title}</h3><div>${w.details}</div></div>`;
+              }
+              return `<div class="announcement">${w.title}</div>`;
+            }
+            let html = '';
+            html += `<div style='font-family:Ubuntu,Arial,sans-serif;max-width:900px;margin:0 auto;background:#fff;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.12);padding:32px;'>`;
+            html += `<h1 style='text-align:center;color:#001489;'>Squadron Announcements</h1>`;
+            html += `<h2 style='color:#003ab8;'>Upcoming Squadron Meetings</h2>`;
+            html += (data.meetings||[]).map(renderMeeting).join('');
+            html += `<h2 style='color:#003ab8;'>General Squadron Information</h2><div class='meeting'>${data.general||''}</div>`;
+            html += `<h2 style='color:#003ab8;'>Ongoing Opportunities</h2>`;
+            html += (data.opportunities||[]).map(renderOpportunity).join('');
+            html += `<h2 style='color:#003ab8;'>Wing & Higher Command Announcements</h2>`;
+            html += (data.wing||[]).map(renderAnnouncement).join('');
+            html += `</div>`;
+            // Show in a modal or prompt for easy copy
+            const win = window.open('', '', 'width=900,height=700');
+            win.document.write('<title>Copy HTML for Email</title>');
+            win.document.write('<h2 style="font-family:Ubuntu,Arial,sans-serif;">Copy and paste this into your email:</h2>');
+            win.document.write('<textarea style="width:98%;height:400px;font-family:monospace;font-size:1em;">'+html.replace(/<\/textarea/g,'&lt;/textarea')+'</textarea>');
+            win.document.write('<div style="margin:12px 0;font-family:Ubuntu,Arial,sans-serif;">Preview:</div>'+html);
+            win.document.close();
+          };
        
       <!-- Meetings Section -->
       <div class="section">
