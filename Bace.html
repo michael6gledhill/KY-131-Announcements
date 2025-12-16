@@ -242,83 +242,11 @@
 
   </div>
 
-  <div class="footer" style="background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); padding: 30px; text-align: center; font-size: 1em; color: #666; border-top: 6px solid; border-image: linear-gradient(90deg, #FFCD00 0%, #BA0C2F 50%, #001489 100%) 1;">
+  <div style="background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); padding: 30px; text-align: center; font-size: 1em; color: #666; border-top: 6px solid; border-image: linear-gradient(90deg, #FFCD00 0%, #BA0C2F 50%, #001489 100%) 1;">
     <strong>Remember to "Reply All" if you have questions or need clarification on anything listed above.</strong>
-    <br><br>
-    <a href="admin.html" style="color:#001489; font-weight:600; text-decoration:underline;">Admin Login</a>
   </div>
-  <script>
-    // Template rendering functions
-    function renderMeeting(m) {
-      const t = m.template || 'card';
-      if (m.noMeeting) {
-        if (t === 'highlight') {
-          return `<div class="meeting no-meeting" style="background:linear-gradient(135deg,#fff3cd 0%,#fffbea 100%);border-left:5px solid #FFCD00;text-align:center;font-size:1.3em;font-weight:800;color:#856404;box-shadow:0 4px 15px rgba(0,0,0,0.08);">NO MEETING</div>`;
-        }
-        // default
-        return `<div class="meeting no-meeting">NO MEETING</div>`;
-      }
-      if (t === 'card') {
-        return `<div class="meeting"><h3>${m.date} - ${m.title}</h3><div><strong>Location:</strong> ${m.location}</div><div><strong>UOD:</strong> ${m.uod}</div><div><strong>Details:</strong> ${m.details}</div><div><strong>Cadets:</strong> ${m.cadets}</div><div><strong>Primary AM:</strong> ${m.am}</div></div>`;
-      } else if (t === 'simple') {
-        return `<div class="meeting" style="background:#f4f8ff;border-left:3px solid #003ab8;"><strong>${m.date}:</strong> ${m.title} (${m.location})</div>`;
-      } else if (t === 'highlight') {
-        return `<div class="meeting" style="background:linear-gradient(135deg,#e0ffe0 0%,#f9fff9 100%);border-left:5px solid #28a745;"><h3 style="color:#28a745;">${m.title}</h3><div><strong>Date:</strong> ${m.date}</div><div><strong>Location:</strong> ${m.location}</div></div>`;
-      }
-      return `<div class="meeting">${m.title}</div>`;
-    }
-    function renderOpportunity(o) {
-      const t = o.template || 'card';
-      if (t === 'card') {
-        return `<div class="opportunity"><h3>${o.title}</h3><div><strong>Open to:</strong> ${o.openTo}</div><div>${o.details}</div>${o.link ? `<div><a href="${o.link}" target="_blank">${o.linkText}</a></div>` : ''}</div>`;
-      } else if (t === 'simple') {
-        return `<div class="opportunity" style="background:#f4f8ff;border-left:3px solid #003ab8;"><strong>${o.title}</strong> - ${o.details}</div>`;
-      } else if (t === 'highlight') {
-        return `<div class="opportunity" style="background:linear-gradient(135deg,#fffbe0 0%,#fff9e6 100%);border-left:5px solid #FFCD00;"><h3 style="color:#FFCD00;">${o.title}</h3><div>${o.details}</div></div>`;
-      }
-      return `<div class="opportunity">${o.title}</div>`;
-    }
-    function renderAnnouncement(w) {
-      const t = w.template || 'card';
-      if (t === 'card') {
-        return `<div class="announcement"><h3>${w.title}</h3><div>${w.details}</div></div>`;
-      } else if (t === 'simple') {
-        return `<div class="announcement" style="background:#f4f8ff;border-left:3px solid #003ab8;"><strong>${w.title}:</strong> ${w.details}</div>`;
-      } else if (t === 'highlight') {
-        return `<div class="announcement" style="background:linear-gradient(135deg,#ffe0e0 0%,#fff9f9 100%);border-left:5px solid #BA0C2F;"><h3 style="color:#BA0C2F;">${w.title}</h3><div>${w.details}</div></div>`;
-      }
-      return `<div class="announcement">${w.title}</div>`;
-    }
-    // Load announcements data from localStorage or use defaults
-    function getData() {
-      const data = localStorage.getItem('announcementsData');
-      if (data) return JSON.parse(data);
-      // Default data structure
-      return {
-        meetings: [
-          { date: '15 December', title: 'Emergency Services', location: 'EKX', uod: 'ABU/OCPs', details: 'TBA', cadets: 'C/CMSgt Fruth M.', am: 'Capt Threadgill', template: 'card' },
-          { date: '22 December', title: 'Character Development Instruction (CDI)', location: 'Virtual', uod: 'Civilian', details: 'Monday, Dec 22 · 6:30–7:15 PM (45 minutes)', cadets: '', am: '', template: 'simple' },
-          { date: '29 December', noMeeting: true, template: 'highlight' }
-        ],
-        general: 'All Cadets and Parents: Join our squadron\'s private Facebook group. If your last name is different from your cadet\'s last name, reach out to 2nd Lt. Gledhill for approval.',
-        opportunities: [
-          { title: 'sUAS Course - Ongoing', openTo: 'All Members', details: 'For those interested in the sUAS Technician and Mission Pilot courses, follow the link below for instructions on the program.', link: 'https://classroom.google.com/c/NDQ1ODk4OTA0MDY4?cjc=wsiqpag', linkText: 'Access Google Classroom', template: 'card' }
-        ],
-        wing: [
-          { title: '2026 OHWG Encampment Cadet Cadre Applications', details: 'Application Deadline: January 23, 2026. Eligibility: All cadets who have completed their basic encampment and will be Staff Sgt. or above by June 2026. Encampment Dates: June 6-13, 2026.', template: 'highlight' }
-        ]
-      };
-    }
-    const data = getData();
-    // Render meetings
-    const meetingsSection = document.getElementById('meetings-section');
-    meetingsSection.innerHTML = '<h2>Upcoming Squadron Meetings</h2>' + data.meetings.map(renderMeeting).join('');
-    // Render general info
-    document.getElementById('general-section').innerHTML = '<h2>General Squadron Information</h2><div class="meeting">' + data.general + '</div>';
-    // Render opportunities
-    document.getElementById('opportunities-section').innerHTML = '<h2>Ongoing Opportunities</h2>' + data.opportunities.map(renderOpportunity).join('');
-    // Render wing announcements
-    document.getElementById('wing-section').innerHTML = '<h2>Wing & Higher Command Announcements</h2>' + data.wing.map(renderAnnouncement).join('');
-  </script>
+
+</div>
+
 </body>
 </html>
