@@ -42,11 +42,13 @@
   <div id="admin" class="container" style="display:none;">
     <span class="logout" onclick="logout()">Logout</span>
     <h1>Edit Announcements</h1>
+    <label style="display:block;margin-bottom:12px;"><input type="checkbox" id="view-css-toggle" onchange="toggleViewCSS()"> View as Inline CSS (Preview)</label>
     <form id="editor-form" autocomplete="off">
       <!-- Meetings Section -->
       <div class="section">
         <h2>Upcoming Squadron Meetings</h2>
         <div class="item-list" id="meetings-list"></div>
+        <div id="meetings-preview" style="display:none;"></div>
         <button type="button" class="add-btn" onclick="addMeeting()">Add Meeting</button>
         <button type="button" class="add-btn no-meeting-btn" onclick="addNoMeeting()">Add No Meeting Placeholder</button>
       </div>
@@ -54,17 +56,20 @@
       <div class="section">
         <h2>General Squadron Information</h2>
         <textarea id="general-info" rows="3" style="width:100%;"></textarea>
+        <div id="general-preview" style="display:none;"></div>
       </div>
       <!-- Opportunities Section -->
       <div class="section">
         <h2>Ongoing Opportunities</h2>
         <div class="item-list" id="opportunities-list"></div>
+        <div id="opportunities-preview" style="display:none;"></div>
         <button type="button" class="add-btn" onclick="addOpportunity()">Add Opportunity</button>
       </div>
       <!-- Wing Announcements Section -->
       <div class="section">
         <h2>Wing & Higher Command Announcements</h2>
         <div class="item-list" id="wing-list"></div>
+        <div id="wing-preview" style="display:none;"></div>
         <button type="button" class="add-btn" onclick="addWing()">Add Announcement</button>
       </div>
       <button type="submit" style="margin-top:16px;">Save Changes</button>
@@ -108,8 +113,13 @@
       const meetingsList = document.getElementById('meetings-list');
       meetingsList.innerHTML = '';
       data.meetings.forEach((m, i) => {
+        let templateSel = `<select onchange='editMeeting(${i}, "template", this.value)'>
+          <option value='card'${m.template==="card"||!m.template?" selected":""}>Card</option>
+          <option value='simple'${m.template==="simple"?" selected":""}>Simple</option>
+          <option value='highlight'${m.template==="highlight"?" selected":""}>Highlight</option>
+        </select>`;
         if (m.noMeeting) {
-          meetingsList.innerHTML += `<div class='item'>NO MEETING <span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span></div>`;
+          meetingsList.innerHTML += `<div class='item'>NO MEETING ${templateSel}<span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span></div>`;
         } else {
           meetingsList.innerHTML += `<div class='item'>
             <input value='${m.date}' placeholder='Date' onchange='editMeeting(${i}, "date", this.value)' />
@@ -119,6 +129,7 @@
             <input value='${m.details}' placeholder='Details' onchange='editMeeting(${i}, "details", this.value)' />
             <input value='${m.cadets}' placeholder='Cadets' onchange='editMeeting(${i}, "cadets", this.value)' />
             <input value='${m.am}' placeholder='Primary AM' onchange='editMeeting(${i}, "am", this.value)' />
+            ${templateSel}
             <span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span>
           </div>`;
         }
@@ -129,12 +140,18 @@
       const oppList = document.getElementById('opportunities-list');
       oppList.innerHTML = '';
       data.opportunities.forEach((o, i) => {
+        let templateSel = `<select onchange='editOpportunity(${i}, "template", this.value)'>
+          <option value='card'${o.template==="card"||!o.template?" selected":""}>Card</option>
+          <option value='simple'${o.template==="simple"?" selected":""}>Simple</option>
+          <option value='highlight'${o.template==="highlight"?" selected":""}>Highlight</option>
+        </select>`;
         oppList.innerHTML += `<div class='item'>
           <input value='${o.title}' placeholder='Title' onchange='editOpportunity(${i}, "title", this.value)' />
           <input value='${o.openTo}' placeholder='Open to' onchange='editOpportunity(${i}, "openTo", this.value)' />
           <input value='${o.details}' placeholder='Details' onchange='editOpportunity(${i}, "details", this.value)' />
           <input value='${o.link}' placeholder='Link' onchange='editOpportunity(${i}, "link", this.value)' />
           <input value='${o.linkText}' placeholder='Link Text' onchange='editOpportunity(${i}, "linkText", this.value)' />
+          ${templateSel}
           <span class='item-actions'><button onclick='deleteOpportunity(${i})'>Delete</button></span>
         </div>`;
       });
@@ -142,9 +159,15 @@
       const wingList = document.getElementById('wing-list');
       wingList.innerHTML = '';
       data.wing.forEach((w, i) => {
+        let templateSel = `<select onchange='editWing(${i}, "template", this.value)'>
+          <option value='card'${w.template==="card"||!w.template?" selected":""}>Card</option>
+          <option value='simple'${w.template==="simple"?" selected":""}>Simple</option>
+          <option value='highlight'${w.template==="highlight"?" selected":""}>Highlight</option>
+        </select>`;
         wingList.innerHTML += `<div class='item'>
           <input value='${w.title}' placeholder='Title' onchange='editWing(${i}, "title", this.value)' />
           <input value='${w.details}' placeholder='Details' onchange='editWing(${i}, "details", this.value)' />
+          ${templateSel}
           <span class='item-actions'><button onclick='deleteWing(${i})'>Delete</button></span>
         </div>`;
       });
@@ -232,6 +255,68 @@
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('login-error').innerText = '';
+    }
+    function renderMeeting(m) {
+      const t = m.template || 'card';
+      if (m.noMeeting) {
+        if (t === 'highlight') {
+          return `<div class=\"meeting no-meeting\" style=\"background:linear-gradient(135deg,#fff3cd 0%,#fffbea 100%);border-left:5px solid #FFCD00;text-align:center;font-size:1.3em;font-weight:800;color:#856404;box-shadow:0 4px 15px rgba(0,0,0,0.08);\">NO MEETING</div>`;
+        }
+        // default
+        return `<div class=\"meeting no-meeting\">NO MEETING</div>`;
+      }
+      if (t === 'card') {
+        return `<div class=\"meeting\"><h3>${m.date} - ${m.title}</h3><div><strong>Location:</strong> ${m.location}</div><div><strong>UOD:</strong> ${m.uod}</div><div><strong>Details:</strong> ${m.details}</div><div><strong>Cadets:</strong> ${m.cadets}</div><div><strong>Primary AM:</strong> ${m.am}</div></div>`;
+      } else if (t === 'simple') {
+        return `<div class=\"meeting\" style=\"background:#f4f8ff;border-left:3px solid #003ab8;\"><strong>${m.date}:</strong> ${m.title} (${m.location})</div>`;
+      } else if (t === 'highlight') {
+        return `<div class=\"meeting\" style=\"background:linear-gradient(135deg,#e0ffe0 0%,#f9fff9 100%);border-left:5px solid #28a745;\"><h3 style=\"color:#28a745;\">${m.title}</h3><div><strong>Date:</strong> ${m.date}</div><div><strong>Location:</strong> ${m.location}</div></div>`;
+      }
+      return `<div class=\"meeting\">${m.title}</div>`;
+    }
+    function renderOpportunity(o) {
+      const t = o.template || 'card';
+      if (t === 'card') {
+        return `<div class=\"opportunity\"><h3>${o.title}</h3><div><strong>Open to:</strong> ${o.openTo}</div><div>${o.details}</div>${o.link ? `<div><a href=\"${o.link}\" target=\"_blank\">${o.linkText}</a></div>` : ''}</div>`;
+      } else if (t === 'simple') {
+        return `<div class=\"opportunity\" style=\"background:#f4f8ff;border-left:3px solid #003ab8;\"><strong>${o.title}</strong> - ${o.details}</div>`;
+      } else if (t === 'highlight') {
+        return `<div class=\"opportunity\" style=\"background:linear-gradient(135deg,#fffbe0 0%,#fff9e6 100%);border-left:5px solid #FFCD00;\"><h3 style=\"color:#FFCD00;\">${o.title}</h3><div>${o.details}</div></div>`;
+      }
+      return `<div class=\"opportunity\">${o.title}</div>`;
+    }
+    function renderAnnouncement(w) {
+      const t = w.template || 'card';
+      if (t === 'card') {
+        return `<div class=\"announcement\"><h3>${w.title}</h3><div>${w.details}</div></div>`;
+      } else if (t === 'simple') {
+        return `<div class=\"announcement\" style=\"background:#f4f8ff;border-left:3px solid #003ab8;\"><strong>${w.title}:</strong> ${w.details}</div>`;
+      } else if (t === 'highlight') {
+        return `<div class=\"announcement\" style=\"background:linear-gradient(135deg,#ffe0e0 0%,#fff9f9 100%);border-left:5px solid #BA0C2F;\"><h3 style=\"color:#BA0C2F;\">${w.title}</h3><div>${w.details}</div></div>`;
+      }
+      return `<div class=\"announcement\">${w.title}</div>`;
+    }
+    function toggleViewCSS() {
+      const checked = document.getElementById('view-css-toggle').checked;
+      document.getElementById('meetings-list').style.display = checked ? 'none' : '';
+      document.getElementById('opportunities-list').style.display = checked ? 'none' : '';
+      document.getElementById('wing-list').style.display = checked ? 'none' : '';
+      document.getElementById('general-info').style.display = checked ? 'none' : '';
+      document.getElementById('meetings-preview').style.display = checked ? '' : 'none';
+      document.getElementById('opportunities-preview').style.display = checked ? '' : 'none';
+      document.getElementById('wing-preview').style.display = checked ? '' : 'none';
+      document.getElementById('general-preview').style.display = checked ? '' : 'none';
+      if (checked) renderPreviews();
+    }
+    function renderPreviews() {
+      // Meetings
+      document.getElementById('meetings-preview').innerHTML = data.meetings.map(renderMeeting).join('');
+      // General
+      document.getElementById('general-preview').innerHTML = `<div class='meeting'>${data.general}</div>`;
+      // Opportunities
+      document.getElementById('opportunities-preview').innerHTML = data.opportunities.map(renderOpportunity).join('');
+      // Wing
+      document.getElementById('wing-preview').innerHTML = data.wing.map(renderAnnouncement).join('');
     }
   </script>
 </body>
