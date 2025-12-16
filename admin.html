@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Edit Announcements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Ubuntu', Arial, sans-serif; background: #f0f4fa; color: #222; margin: 0; }
+    .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 32px; }
+    h1 { text-align: center; color: #001489; }
+    .login-box { max-width: 350px; margin: 80px auto; background: #fff; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 32px; }
+    label { font-weight: 600; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0 16px 0; border-radius: 6px; border: 1px solid #bbb; }
+    button { background: #001489; color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-size: 1em; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    button:hover { background: #003ab8; }
+    .section { margin-bottom: 32px; }
+    .section h2 { color: #003ab8; margin-bottom: 12px; }
+    .item-list { margin-bottom: 12px; }
+    .item { background: #f7f9fc; border-radius: 6px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .item input, .item textarea { width: 100%; margin: 0 8px; }
+    .item-actions button { margin-left: 8px; }
+    .template-select { margin-bottom: 12px; }
+    .logout { float: right; color: #003ab8; cursor: pointer; font-size: 0.95em; }
+    .logout:hover { text-decoration: underline; }
+    .add-btn { margin-top: 8px; }
+    .no-meeting-btn { background: #FFCD00; color: #222; }
+  </style>
+</head>
+<body>
+  <div id="login" class="login-box">
+    <h2>Admin Login</h2>
+    <label for="username">Username</label>
+    <input type="text" id="username" autocomplete="username" />
+    <label for="password">Password</label>
+    <input type="password" id="password" autocomplete="current-password" />
+    <button onclick="login()">Login</button>
+    <div id="login-error" style="color: red; margin-top: 10px;"></div>
+  </div>
+  <div id="admin" class="container" style="display:none;">
+    <span class="logout" onclick="logout()">Logout</span>
+    <h1>Edit Announcements</h1>
+    <form id="editor-form" autocomplete="off">
+      <!-- Meetings Section -->
+      <div class="section">
+        <h2>Upcoming Squadron Meetings</h2>
+        <div class="item-list" id="meetings-list"></div>
+        <button type="button" class="add-btn" onclick="addMeeting()">Add Meeting</button>
+        <button type="button" class="add-btn no-meeting-btn" onclick="addNoMeeting()">Add No Meeting Placeholder</button>
+      </div>
+      <!-- General Info Section -->
+      <div class="section">
+        <h2>General Squadron Information</h2>
+        <textarea id="general-info" rows="3" style="width:100%;"></textarea>
+      </div>
+      <!-- Opportunities Section -->
+      <div class="section">
+        <h2>Ongoing Opportunities</h2>
+        <div class="item-list" id="opportunities-list"></div>
+        <button type="button" class="add-btn" onclick="addOpportunity()">Add Opportunity</button>
+      </div>
+      <!-- Wing Announcements Section -->
+      <div class="section">
+        <h2>Wing & Higher Command Announcements</h2>
+        <div class="item-list" id="wing-list"></div>
+        <button type="button" class="add-btn" onclick="addWing()">Add Announcement</button>
+      </div>
+      <button type="submit" style="margin-top:16px;">Save Changes</button>
+    </form>
+  </div>
+  <script>
+    // --- Login Logic ---
+    function login() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      if (u === 'admin' && p === 'admin123') {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('admin').style.display = 'block';
+        loadEditor();
+      } else {
+        document.getElementById('login-error').innerText = 'Invalid username or password.';
+      }
+    }
+    function logout() {
+      document.getElementById('admin').style.display = 'none';
+      document.getElementById('login').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('login-error').innerText = '';
+    }
+    // --- Data Logic ---
+    function getData() {
+      const data = localStorage.getItem('announcementsData');
+      if (data) return JSON.parse(data);
+      return {
+        meetings: [], general: '', opportunities: [], wing: []
+      };
+    }
+    function setData(data) {
+      localStorage.setItem('announcementsData', JSON.stringify(data));
+    }
+    // --- Editor UI Logic ---
+    let data = getData();
+    function loadEditor() {
+      // Meetings
+      const meetingsList = document.getElementById('meetings-list');
+      meetingsList.innerHTML = '';
+      data.meetings.forEach((m, i) => {
+        if (m.noMeeting) {
+          meetingsList.innerHTML += `<div class='item'>NO MEETING <span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span></div>`;
+        } else {
+          meetingsList.innerHTML += `<div class='item'>
+            <input value='${m.date}' placeholder='Date' onchange='editMeeting(${i}, "date", this.value)' />
+            <input value='${m.title}' placeholder='Title' onchange='editMeeting(${i}, "title", this.value)' />
+            <input value='${m.location}' placeholder='Location' onchange='editMeeting(${i}, "location", this.value)' />
+            <input value='${m.uod}' placeholder='UOD' onchange='editMeeting(${i}, "uod", this.value)' />
+            <input value='${m.details}' placeholder='Details' onchange='editMeeting(${i}, "details", this.value)' />
+            <input value='${m.cadets}' placeholder='Cadets' onchange='editMeeting(${i}, "cadets", this.value)' />
+            <input value='${m.am}' placeholder='Primary AM' onchange='editMeeting(${i}, "am", this.value)' />
+            <span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span>
+          </div>`;
+        }
+      });
+      // General Info
+      document.getElementById('general-info').value = data.general || '';
+      // Opportunities
+      const oppList = document.getElementById('opportunities-list');
+      oppList.innerHTML = '';
+      data.opportunities.forEach((o, i) => {
+        oppList.innerHTML += `<div class='item'>
+          <input value='${o.title}' placeholder='Title' onchange='editOpportunity(${i}, "title", this.value)' />
+          <input value='${o.openTo}' placeholder='Open to' onchange='editOpportunity(${i}, "openTo", this.value)' />
+          <input value='${o.details}' placeholder='Details' onchange='editOpportunity(${i}, "details", this.value)' />
+          <input value='${o.link}' placeholder='Link' onchange='editOpportunity(${i}, "link", this.value)' />
+          <input value='${o.linkText}' placeholder='Link Text' onchange='editOpportunity(${i}, "linkText", this.value)' />
+          <span class='item-actions'><button onclick='deleteOpportunity(${i})'>Delete</button></span>
+        </div>`;
+      });
+      // Wing Announcements
+      const wingList = document.getElementById('wing-list');
+      wingList.innerHTML = '';
+      data.wing.forEach((w, i) => {
+        wingList.innerHTML += `<div class='item'>
+          <input value='${w.title}' placeholder='Title' onchange='editWing(${i}, "title", this.value)' />
+          <input value='${w.details}' placeholder='Details' onchange='editWing(${i}, "details", this.value)' />
+          <span class='item-actions'><button onclick='deleteWing(${i})'>Delete</button></span>
+        </div>`;
+      });
+    }
+    // --- Meetings CRUD ---
+    function addMeeting() {
+      data.meetings.push({ date: '', title: '', location: '', uod: '', details: '', cadets: '', am: '' });
+      loadEditor();
+    }
+    function addNoMeeting() {
+      data.meetings.push({ noMeeting: true });
+      loadEditor();
+    }
+    function editMeeting(i, field, value) {
+      data.meetings[i][field] = value;
+      setData(data);
+    }
+    function deleteMeeting(i) {
+      data.meetings.splice(i, 1);
+      setData(data);
+      loadEditor();
+    }
+    // --- General Info ---
+    document.getElementById('general-info').addEventListener('input', function() {
+      data.general = this.value;
+      setData(data);
+    });
+    // --- Opportunities CRUD ---
+    function addOpportunity() {
+      data.opportunities.push({ title: '', openTo: '', details: '', link: '', linkText: '' });
+      loadEditor();
+    }
+    function editOpportunity(i, field, value) {
+      data.opportunities[i][field] = value;
+      setData(data);
+    }
+    function deleteOpportunity(i) {
+      data.opportunities.splice(i, 1);
+      setData(data);
+      loadEditor();
+    }
+    // --- Wing Announcements CRUD ---
+    function addWing() {
+      data.wing.push({ title: '', details: '' });
+      loadEditor();
+    }
+    function editWing(i, field, value) {
+      data.wing[i][field] = value;
+      setData(data);
+    }
+    function deleteWing(i) {
+      data.wing.splice(i, 1);
+      setData(data);
+      loadEditor();
+    }
+    // --- Save All ---
+    document.getElementById('editor-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      setData(data);
+      alert('Announcements updated!');
+    });
+    // --- On load, if already logged in, show admin ---
+    if (sessionStorage.getItem('admin') === '1') {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('admin').style.display = 'block';
+      loadEditor();
+    }
+    // --- Persist login for session ---
+    function login() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      if (u === 'admin' && p === 'admin123') {
+        sessionStorage.setItem('admin', '1');
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('admin').style.display = 'block';
+        loadEditor();
+      } else {
+        document.getElementById('login-error').innerText = 'Invalid username or password.';
+      }
+    }
+    function logout() {
+      sessionStorage.removeItem('admin');
+      document.getElementById('admin').style.display = 'none';
+      document.getElementById('login').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('login-error').innerText = '';
+    }
+  </script>
+</body>
+</html>
