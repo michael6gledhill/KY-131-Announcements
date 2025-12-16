@@ -248,6 +248,11 @@
     <a href="admin.html" style="color:#001489; font-weight:600; text-decoration:underline;">Admin Login</a>
   </div>
   <script>
+    // --- JSONBin.io Config ---
+    const JSONBIN_API_KEY = 'YOUR_API_KEY_HERE'; // <-- Replace with your JSONBin.io secret key
+    const JSONBIN_BIN_ID = 'YOUR_BIN_ID_HERE';   // <-- Replace with your Bin ID
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`;
+
     // Template rendering functions
     function renderMeeting(m) {
       const t = m.template || 'card';
@@ -289,36 +294,31 @@
       }
       return `<div class="announcement">${w.title}</div>`;
     }
-    // Load announcements data from localStorage or use defaults
-    function getData() {
-      const data = localStorage.getItem('announcementsData');
-      if (data) return JSON.parse(data);
-      // Default data structure
-      return {
-        meetings: [
-          { date: '15 December', title: 'Emergency Services', location: 'EKX', uod: 'ABU/OCPs', details: 'TBA', cadets: 'C/CMSgt Fruth M.', am: 'Capt Threadgill', template: 'card' },
-          { date: '22 December', title: 'Character Development Instruction (CDI)', location: 'Virtual', uod: 'Civilian', details: 'Monday, Dec 22 · 6:30–7:15 PM (45 minutes)', cadets: '', am: '', template: 'simple' },
-          { date: '29 December', noMeeting: true, template: 'highlight' }
-        ],
-        general: 'All Cadets and Parents: Join our squadron\'s private Facebook group. If your last name is different from your cadet\'s last name, reach out to 2nd Lt. Gledhill for approval.',
-        opportunities: [
-          { title: 'sUAS Course - Ongoing', openTo: 'All Members', details: 'For those interested in the sUAS Technician and Mission Pilot courses, follow the link below for instructions on the program.', link: 'https://classroom.google.com/c/NDQ1ODk4OTA0MDY4?cjc=wsiqpag', linkText: 'Access Google Classroom', template: 'card' }
-        ],
-        wing: [
-          { title: '2026 OHWG Encampment Cadet Cadre Applications', details: 'Application Deadline: January 23, 2026. Eligibility: All cadets who have completed their basic encampment and will be Staff Sgt. or above by June 2026. Encampment Dates: June 6-13, 2026.', template: 'highlight' }
-        ]
-      };
+
+    // Load announcements data from JSONBin.io
+    async function loadDataAndRender() {
+      let data = { meetings: [], general: '', opportunities: [], wing: [] };
+      try {
+        const res = await fetch(JSONBIN_URL, {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          data = json.record;
+        }
+      } catch (e) { /* fallback to empty */ }
+      // Render meetings
+      const meetingsSection = document.getElementById('meetings-section');
+      meetingsSection.innerHTML = '<h2>Upcoming Squadron Meetings</h2>' + (data.meetings||[]).map(renderMeeting).join('');
+      // Render general info
+      document.getElementById('general-section').innerHTML = '<h2>General Squadron Information</h2><div class="meeting">' + (data.general||'') + '</div>';
+      // Render opportunities
+      document.getElementById('opportunities-section').innerHTML = '<h2>Ongoing Opportunities</h2>' + (data.opportunities||[]).map(renderOpportunity).join('');
+      // Render wing announcements
+      document.getElementById('wing-section').innerHTML = '<h2>Wing & Higher Command Announcements</h2>' + (data.wing||[]).map(renderAnnouncement).join('');
     }
-    const data = getData();
-    // Render meetings
-    const meetingsSection = document.getElementById('meetings-section');
-    meetingsSection.innerHTML = '<h2>Upcoming Squadron Meetings</h2>' + data.meetings.map(renderMeeting).join('');
-    // Render general info
-    document.getElementById('general-section').innerHTML = '<h2>General Squadron Information</h2><div class="meeting">' + data.general + '</div>';
-    // Render opportunities
-    document.getElementById('opportunities-section').innerHTML = '<h2>Ongoing Opportunities</h2>' + data.opportunities.map(renderOpportunity).join('');
-    // Render wing announcements
-    document.getElementById('wing-section').innerHTML = '<h2>Wing & Higher Command Announcements</h2>' + data.wing.map(renderAnnouncement).join('');
+    // Run on page load
+    loadDataAndRender();
   </script>
 </body>
 </html>

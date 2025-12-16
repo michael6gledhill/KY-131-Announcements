@@ -76,166 +76,12 @@
     </form>
   </div>
   <script>
+    // --- JSONBin.io Config ---
+    const JSONBIN_API_KEY = 'YOUR_API_KEY_HERE'; // <-- Replace with your JSONBin.io secret key
+    const JSONBIN_BIN_ID = 'YOUR_BIN_ID_HERE';   // <-- Replace with your Bin ID
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
     // --- Login Logic ---
-    function login() {
-      const u = document.getElementById('username').value;
-      const p = document.getElementById('password').value;
-      if (u === 'admin' && p === 'admin123') {
-        document.getElementById('login').style.display = 'none';
-        document.getElementById('admin').style.display = 'block';
-        loadEditor();
-      } else {
-        document.getElementById('login-error').innerText = 'Invalid username or password.';
-      }
-    }
-    function logout() {
-      document.getElementById('admin').style.display = 'none';
-      document.getElementById('login').style.display = 'block';
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('login-error').innerText = '';
-    }
-    // --- Data Logic ---
-    function getData() {
-      const data = localStorage.getItem('announcementsData');
-      if (data) return JSON.parse(data);
-      return {
-        meetings: [], general: '', opportunities: [], wing: []
-      };
-    }
-    function setData(data) {
-      localStorage.setItem('announcementsData', JSON.stringify(data));
-    }
-    // --- Editor UI Logic ---
-    let data = getData();
-    function loadEditor() {
-      // Meetings
-      const meetingsList = document.getElementById('meetings-list');
-      meetingsList.innerHTML = '';
-      data.meetings.forEach((m, i) => {
-        let templateSel = `<select onchange='editMeeting(${i}, "template", this.value)'>
-          <option value='card'${m.template==="card"||!m.template?" selected":""}>Card</option>
-          <option value='simple'${m.template==="simple"?" selected":""}>Simple</option>
-          <option value='highlight'${m.template==="highlight"?" selected":""}>Highlight</option>
-        </select>`;
-        if (m.noMeeting) {
-          meetingsList.innerHTML += `<div class='item'>NO MEETING ${templateSel}<span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span></div>`;
-        } else {
-          meetingsList.innerHTML += `<div class='item'>
-            <input value='${m.date}' placeholder='Date' onchange='editMeeting(${i}, "date", this.value)' />
-            <input value='${m.title}' placeholder='Title' onchange='editMeeting(${i}, "title", this.value)' />
-            <input value='${m.location}' placeholder='Location' onchange='editMeeting(${i}, "location", this.value)' />
-            <input value='${m.uod}' placeholder='UOD' onchange='editMeeting(${i}, "uod", this.value)' />
-            <input value='${m.details}' placeholder='Details' onchange='editMeeting(${i}, "details", this.value)' />
-            <input value='${m.cadets}' placeholder='Cadets' onchange='editMeeting(${i}, "cadets", this.value)' />
-            <input value='${m.am}' placeholder='Primary AM' onchange='editMeeting(${i}, "am", this.value)' />
-            ${templateSel}
-            <span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span>
-          </div>`;
-        }
-      });
-      // General Info
-      document.getElementById('general-info').value = data.general || '';
-      // Opportunities
-      const oppList = document.getElementById('opportunities-list');
-      oppList.innerHTML = '';
-      data.opportunities.forEach((o, i) => {
-        let templateSel = `<select onchange='editOpportunity(${i}, "template", this.value)'>
-          <option value='card'${o.template==="card"||!o.template?" selected":""}>Card</option>
-          <option value='simple'${o.template==="simple"?" selected":""}>Simple</option>
-          <option value='highlight'${o.template==="highlight"?" selected":""}>Highlight</option>
-        </select>`;
-        oppList.innerHTML += `<div class='item'>
-          <input value='${o.title}' placeholder='Title' onchange='editOpportunity(${i}, "title", this.value)' />
-          <input value='${o.openTo}' placeholder='Open to' onchange='editOpportunity(${i}, "openTo", this.value)' />
-          <input value='${o.details}' placeholder='Details' onchange='editOpportunity(${i}, "details", this.value)' />
-          <input value='${o.link}' placeholder='Link' onchange='editOpportunity(${i}, "link", this.value)' />
-          <input value='${o.linkText}' placeholder='Link Text' onchange='editOpportunity(${i}, "linkText", this.value)' />
-          ${templateSel}
-          <span class='item-actions'><button onclick='deleteOpportunity(${i})'>Delete</button></span>
-        </div>`;
-      });
-      // Wing Announcements
-      const wingList = document.getElementById('wing-list');
-      wingList.innerHTML = '';
-      data.wing.forEach((w, i) => {
-        let templateSel = `<select onchange='editWing(${i}, "template", this.value)'>
-          <option value='card'${w.template==="card"||!w.template?" selected":""}>Card</option>
-          <option value='simple'${w.template==="simple"?" selected":""}>Simple</option>
-          <option value='highlight'${w.template==="highlight"?" selected":""}>Highlight</option>
-        </select>`;
-        wingList.innerHTML += `<div class='item'>
-          <input value='${w.title}' placeholder='Title' onchange='editWing(${i}, "title", this.value)' />
-          <input value='${w.details}' placeholder='Details' onchange='editWing(${i}, "details", this.value)' />
-          ${templateSel}
-          <span class='item-actions'><button onclick='deleteWing(${i})'>Delete</button></span>
-        </div>`;
-      });
-    }
-    // --- Meetings CRUD ---
-    function addMeeting() {
-      data.meetings.push({ date: '', title: '', location: '', uod: '', details: '', cadets: '', am: '' });
-      loadEditor();
-    }
-    function addNoMeeting() {
-      data.meetings.push({ noMeeting: true });
-      loadEditor();
-    }
-    function editMeeting(i, field, value) {
-      data.meetings[i][field] = value;
-      setData(data);
-    }
-    function deleteMeeting(i) {
-      data.meetings.splice(i, 1);
-      setData(data);
-      loadEditor();
-    }
-    // --- General Info ---
-    document.getElementById('general-info').addEventListener('input', function() {
-      data.general = this.value;
-      setData(data);
-    });
-    // --- Opportunities CRUD ---
-    function addOpportunity() {
-      data.opportunities.push({ title: '', openTo: '', details: '', link: '', linkText: '' });
-      loadEditor();
-    }
-    function editOpportunity(i, field, value) {
-      data.opportunities[i][field] = value;
-      setData(data);
-    }
-    function deleteOpportunity(i) {
-      data.opportunities.splice(i, 1);
-      setData(data);
-      loadEditor();
-    }
-    // --- Wing Announcements CRUD ---
-    function addWing() {
-      data.wing.push({ title: '', details: '' });
-      loadEditor();
-    }
-    function editWing(i, field, value) {
-      data.wing[i][field] = value;
-      setData(data);
-    }
-    function deleteWing(i) {
-      data.wing.splice(i, 1);
-      setData(data);
-      loadEditor();
-    }
-    // --- Save All ---
-    document.getElementById('editor-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      setData(data);
-      alert('Announcements updated!');
-    });
-    // --- On load, if already logged in, show admin ---
-    if (sessionStorage.getItem('admin') === '1') {
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('admin').style.display = 'block';
-      loadEditor();
-    }
-    // --- Persist login for session ---
     function login() {
       const u = document.getElementById('username').value;
       const p = document.getElementById('password').value;
@@ -255,6 +101,168 @@
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('login-error').innerText = '';
+    }
+
+    // --- Data Logic (JSONBin.io) ---
+    async function getData() {
+      try {
+        const res = await fetch(JSONBIN_URL + '/latest', {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        if (!res.ok) throw new Error('Failed to fetch data');
+        const json = await res.json();
+        return json.record;
+      } catch (e) {
+        // fallback to empty
+        return { meetings: [], general: '', opportunities: [], wing: [] };
+      }
+    }
+    async function setDataRemote(data) {
+      await fetch(JSONBIN_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_API_KEY
+        },
+        body: JSON.stringify(data)
+      });
+    }
+
+    // --- Editor UI Logic ---
+    let data = { meetings: [], general: '', opportunities: [], wing: [] };
+    async function loadEditor() {
+      data = await getData();
+      // Meetings
+      const meetingsList = document.getElementById('meetings-list');
+      meetingsList.innerHTML = '';
+      data.meetings.forEach((m, i) => {
+        let templateSel = `<select onchange='editMeeting(${i}, "template", this.value)'>
+          <option value='card'${m.template==="card"||!m.template?" selected":""}>Card</option>
+          <option value='simple'${m.template==="simple"?" selected":""}>Simple</option>
+          <option value='highlight'${m.template==="highlight"?" selected":""}>Highlight</option>
+        </select>`;
+        if (m.noMeeting) {
+          meetingsList.innerHTML += `<div class='item'>NO MEETING ${templateSel}<span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span></div>`;
+        } else {
+          meetingsList.innerHTML += `<div class='item'>
+            <input value='${m.date||''}' placeholder='Date' onchange='editMeeting(${i}, "date", this.value)' />
+            <input value='${m.title||''}' placeholder='Title' onchange='editMeeting(${i}, "title", this.value)' />
+            <input value='${m.location||''}' placeholder='Location' onchange='editMeeting(${i}, "location", this.value)' />
+            <input value='${m.uod||''}' placeholder='UOD' onchange='editMeeting(${i}, "uod", this.value)' />
+            <input value='${m.details||''}' placeholder='Details' onchange='editMeeting(${i}, "details", this.value)' />
+            <input value='${m.cadets||''}' placeholder='Cadets' onchange='editMeeting(${i}, "cadets", this.value)' />
+            <input value='${m.am||''}' placeholder='Primary AM' onchange='editMeeting(${i}, "am", this.value)' />
+            ${templateSel}
+            <span class='item-actions'><button onclick='deleteMeeting(${i})'>Delete</button></span>
+          </div>`;
+        }
+      });
+      // General Info
+      document.getElementById('general-info').value = data.general || '';
+      // Opportunities
+      const oppList = document.getElementById('opportunities-list');
+      oppList.innerHTML = '';
+      data.opportunities.forEach((o, i) => {
+        let templateSel = `<select onchange='editOpportunity(${i}, "template", this.value)'>
+          <option value='card'${o.template==="card"||!o.template?" selected":""}>Card</option>
+          <option value='simple'${o.template==="simple"?" selected":""}>Simple</option>
+          <option value='highlight'${o.template==="highlight"?" selected":""}>Highlight</option>
+        </select>`;
+        oppList.innerHTML += `<div class='item'>
+          <input value='${o.title||''}' placeholder='Title' onchange='editOpportunity(${i}, "title", this.value)' />
+          <input value='${o.openTo||''}' placeholder='Open to' onchange='editOpportunity(${i}, "openTo", this.value)' />
+          <input value='${o.details||''}' placeholder='Details' onchange='editOpportunity(${i}, "details", this.value)' />
+          <input value='${o.link||''}' placeholder='Link' onchange='editOpportunity(${i}, "link", this.value)' />
+          <input value='${o.linkText||''}' placeholder='Link Text' onchange='editOpportunity(${i}, "linkText", this.value)' />
+          ${templateSel}
+          <span class='item-actions'><button onclick='deleteOpportunity(${i})'>Delete</button></span>
+        </div>`;
+      });
+      // Wing Announcements
+      const wingList = document.getElementById('wing-list');
+      wingList.innerHTML = '';
+      data.wing.forEach((w, i) => {
+        let templateSel = `<select onchange='editWing(${i}, "template", this.value)'>
+          <option value='card'${w.template==="card"||!w.template?" selected":""}>Card</option>
+          <option value='simple'${w.template==="simple"?" selected":""}>Simple</option>
+          <option value='highlight'${w.template==="highlight"?" selected":""}>Highlight</option>
+        </select>`;
+        wingList.innerHTML += `<div class='item'>
+          <input value='${w.title||''}' placeholder='Title' onchange='editWing(${i}, "title", this.value)' />
+          <input value='${w.details||''}' placeholder='Details' onchange='editWing(${i}, "details", this.value)' />
+          ${templateSel}
+          <span class='item-actions'><button onclick='deleteWing(${i})'>Delete</button></span>
+        </div>`;
+      });
+    }
+
+    // --- Meetings CRUD ---
+    async function addMeeting() {
+      data.meetings.push({ date: '', title: '', location: '', uod: '', details: '', cadets: '', am: '' });
+      await setDataRemote(data);
+      loadEditor();
+    }
+    async function addNoMeeting() {
+      data.meetings.push({ noMeeting: true });
+      await setDataRemote(data);
+      loadEditor();
+    }
+    async function editMeeting(i, field, value) {
+      data.meetings[i][field] = value;
+      await setDataRemote(data);
+    }
+    async function deleteMeeting(i) {
+      data.meetings.splice(i, 1);
+      await setDataRemote(data);
+      loadEditor();
+    }
+    // --- General Info ---
+    document.getElementById('general-info').addEventListener('input', async function() {
+      data.general = this.value;
+      await setDataRemote(data);
+    });
+    // --- Opportunities CRUD ---
+    async function addOpportunity() {
+      data.opportunities.push({ title: '', openTo: '', details: '', link: '', linkText: '' });
+      await setDataRemote(data);
+      loadEditor();
+    }
+    async function editOpportunity(i, field, value) {
+      data.opportunities[i][field] = value;
+      await setDataRemote(data);
+    }
+    async function deleteOpportunity(i) {
+      data.opportunities.splice(i, 1);
+      await setDataRemote(data);
+      loadEditor();
+    }
+    // --- Wing Announcements CRUD ---
+    async function addWing() {
+      data.wing.push({ title: '', details: '' });
+      await setDataRemote(data);
+      loadEditor();
+    }
+    async function editWing(i, field, value) {
+      data.wing[i][field] = value;
+      await setDataRemote(data);
+    }
+    async function deleteWing(i) {
+      data.wing.splice(i, 1);
+      await setDataRemote(data);
+      loadEditor();
+    }
+    // --- Save All ---
+    document.getElementById('editor-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      await setDataRemote(data);
+      alert('Announcements updated!');
+    });
+
+    // --- On load, if already logged in, show admin ---
+    if (sessionStorage.getItem('admin') === '1') {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('admin').style.display = 'block';
+      loadEditor();
     }
     function renderMeeting(m) {
       const t = m.template || 'card';
