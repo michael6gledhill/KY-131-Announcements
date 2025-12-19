@@ -48,6 +48,32 @@
     <button class="save-btn" id="saveBtn">Export to Bace.html</button>
   </div>
   <script>
+        // Quick meeting block generator
+        function parseMeetingText(text) {
+          // Simple parser for the provided meeting format
+          const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+          let html = '<div style="padding:18px 24px;background:#eef6ff;border-radius:8px;border:2px solid #003ab8;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:8px;">';
+          if (lines[0]) html += `<div style='font-size:1.2em;font-weight:700;color:#003ab8;margin-bottom:6px;'>${lines[0]}</div>`;
+          if (lines[1]) html += `<div style='font-weight:600;color:#001489;'>${lines[1]}</div>`;
+          if (lines[2]) html += `<div style='color:#003ab8;'>${lines[2]}</div>`;
+          if (lines[3]) html += `<div style='font-weight:600;color:#FFCD00;'>${lines[3]}</div>`;
+          if (lines[4]) html += `<div style='margin:8px 0;color:#333;'>${lines[4]}</div>`;
+          if (lines[5]) html += `<div style='font-weight:600;color:#003ab8;'>${lines[5]}</div>`;
+          if (lines[6]) html += `<div style='color:#003ab8;'>${lines[6]}</div>`;
+          if (lines[7]) html += `<div style='color:#003ab8;'>${lines[7]}</div>`;
+          html += '</div>';
+          return html;
+        }
+
+        // Paste handler for meeting info
+        document.addEventListener('paste', function(e) {
+          const text = (e.clipboardData || window.clipboardData).getData('text');
+          // Detect meeting format (starts with 'Meeting #')
+          if (/^Meeting #/i.test(text)) {
+            e.preventDefault();
+            addBlock(parseMeetingText(text), 'Meeting Card');
+          }
+        });
     // List of templates (update if you add more)
     const templates = [
       { name: 'Meeting Card', file: 'templates/template3.html' },
