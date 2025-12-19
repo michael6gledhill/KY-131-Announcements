@@ -64,24 +64,20 @@
           let current = '';
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            if (/^\[Location\]/i.test(line)) { current = 'location'; continue; }
-            if (/^\[UOD\]/i.test(line)) { current = 'uod'; continue; }
-            if (/^\[Details\]/i.test(line)) { current = 'details'; continue; }
-            if (/^\[Cadets\]/i.test(line)) { current = 'cadets'; continue; }
-            if (/^\[Primary AM\]/i.test(line)) { current = 'primary'; continue; }
+            // Match [Label] Value or Label: Value
+            let match;
+            if ((match = line.match(/^\[Location\]\s*(.*)$/i))) { data.location = 'Location: ' + match[1]; continue; }
+            if ((match = line.match(/^UOD:\s*(.*)$/i))) { data.uod = 'UOD: ' + match[1]; continue; }
+            if ((match = line.match(/^Details:\s*(.*)$/i))) { data.details = 'Details: ' + match[1]; continue; }
+            if ((match = line.match(/^Cadets:\s*(.*)$/i))) { data.cadets = 'Cadets: ' + match[1]; continue; }
+            if ((match = line.match(/^Primary AM:\s*(.*)$/i))) { data.primary = 'Primary AM: ' + match[1]; continue; }
+            // Also support [Label] Value
+            if ((match = line.match(/^\[UOD\]\s*(.*)$/i))) { data.uod = 'UOD: ' + match[1]; continue; }
+            if ((match = line.match(/^\[Details\]\s*(.*)$/i))) { data.details = 'Details: ' + match[1]; continue; }
+            if ((match = line.match(/^\[Cadets\]\s*(.*)$/i))) { data.cadets = 'Cadets: ' + match[1]; continue; }
+            if ((match = line.match(/^\[Primary AM\]\s*(.*)$/i))) { data.primary = 'Primary AM: ' + match[1]; continue; }
             if (!data.title) { data.title = line; continue; }
             if (!data.subtitle) { data.subtitle = line; continue; }
-            if (current && data[current] === '') {
-              // Save as 'Label Value' (e.g., 'Location EKX')
-              let label = '';
-              if (current === 'location') label = 'Location';
-              if (current === 'uod') label = 'UOD';
-              if (current === 'details') label = 'Details';
-              if (current === 'cadets') label = 'Cadets';
-              if (current === 'primary') label = 'Primary AM';
-              data[current] = label + ' ' + line;
-              continue;
-            }
           }
           let html = '<div style="padding:18px 24px;background:#eef6ff;border-radius:8px;border:2px solid #003ab8;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:8px;">';
           if (data.title) html += `<div style='font-size:1.2em;font-weight:700;color:#003ab8;margin-bottom:6px;'>${data.title}</div>`;
