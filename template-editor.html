@@ -64,29 +64,26 @@
           let current = '';
           for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            // Match [Label] Value or Label: Value
             let match;
-            if ((match = line.match(/^\[Location\]\s*(.*)$/i))) { data.location = 'Location: ' + match[1]; continue; }
-            if ((match = line.match(/^UOD:\s*(.*)$/i))) { data.uod = 'UOD: ' + match[1]; continue; }
-            if ((match = line.match(/^Details:\s*(.*)$/i))) { data.details = 'Details: ' + match[1]; continue; }
-            if ((match = line.match(/^Cadets:\s*(.*)$/i))) { data.cadets = 'Cadets: ' + match[1]; continue; }
-            if ((match = line.match(/^Primary AM:\s*(.*)$/i))) { data.primary = 'Primary AM: ' + match[1]; continue; }
-            // Also support [Label] Value
-            if ((match = line.match(/^\[UOD\]\s*(.*)$/i))) { data.uod = 'UOD: ' + match[1]; continue; }
-            if ((match = line.match(/^\[Details\]\s*(.*)$/i))) { data.details = 'Details: ' + match[1]; continue; }
-            if ((match = line.match(/^\[Cadets\]\s*(.*)$/i))) { data.cadets = 'Cadets: ' + match[1]; continue; }
-            if ((match = line.match(/^\[Primary AM\]\s*(.*)$/i))) { data.primary = 'Primary AM: ' + match[1]; continue; }
+            if ((match = line.match(/^\[Location\]\s*(.*)$/i))) { data.location = match[1]; continue; }
+            if ((match = line.match(/^UOD:\s*(.*)$/i))) { data.uod = match[1]; continue; }
+            if ((match = line.match(/^Details:\s*(.*)$/i))) { data.details = match[1]; continue; }
+            if ((match = line.match(/^Cadets:\s*(.*)$/i))) { data.cadets = match[1]; continue; }
+            if ((match = line.match(/^Primary AM:\s*(.*)$/i))) { data.primary = match[1]; continue; }
+            if ((match = line.match(/^\[UOD\]\s*(.*)$/i))) { data.uod = match[1]; continue; }
+            if ((match = line.match(/^\[Details\]\s*(.*)$/i))) { data.details = match[1]; continue; }
+            if ((match = line.match(/^\[Cadets\]\s*(.*)$/i))) { data.cadets = match[1]; continue; }
+            if ((match = line.match(/^\[Primary AM\]\s*(.*)$/i))) { data.primary = match[1]; continue; }
             if (!data.title) { data.title = line; continue; }
             if (!data.subtitle) { data.subtitle = line; continue; }
           }
           let html = '<div style="padding:18px 24px;background:#eef6ff;border-radius:8px;border:2px solid #003ab8;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:8px;">';
           if (data.title) html += `<div style='font-size:1.2em;font-weight:700;color:#003ab8;margin-bottom:6px;'>${data.title}</div>`;
-          if (data.subtitle) html += `<div style='font-weight:600;color:#001489;'>${data.subtitle}</div>`;
-          if (data.location) html += `<div style='color:#003ab8;'>${data.location}</div>`;
-          if (data.uod) html += `<div style='font-weight:600;color:#FFCD00;'>${data.uod}</div>`;
-          if (data.details) html += `<div style='margin:8px 0;color:#333;'>${data.details}</div>`;
-          if (data.cadets) html += `<div style='font-weight:600;color:#003ab8;'>${data.cadets}</div>`;
-          if (data.primary) html += `<div style='color:#003ab8;'>${data.primary}</div>`;
+          if (data.location) html += `<div style='color:#003ab8;'><b>[Location]</b> ${data.location}</div>`;
+          if (data.uod) html += `<div style='font-weight:600;color:#FFCD00;'><b>[UOD]</b> ${data.uod}</div>`;
+          if (data.details) html += `<div style='margin:8px 0;color:#333;'><b>[Details]</b> ${data.details}</div>`;
+          if (data.cadets) html += `<div style='font-weight:600;color:#003ab8;'><b>[Cadets]</b> ${data.cadets}</div>`;
+          if (data.primary) html += `<div style='color:#003ab8;'><b>[Primary AM]</b> ${data.primary}</div>`;
           html += '</div>';
           return html;
         }
