@@ -46,5 +46,11 @@
         "template_type": "wing-announcement",
         "subject": "[Wing Announcement] {title}",
         "body_html_path": "templates/template7.html"
+    },
+    {
+        "name": "open-signups",
+        "template_type": "signup",
+        "subject": "[Open Signup] {title}",
+        "body_html_path": "templates/template-signup.html"
     }
 ]
