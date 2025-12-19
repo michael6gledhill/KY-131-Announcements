@@ -50,17 +50,37 @@
   <script>
         // Quick meeting block generator
         function parseMeetingText(text) {
-          // Simple parser for the provided meeting format
+          // Improved parser for labeled meeting format
           const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+          let data = {
+            title: '',
+            subtitle: '',
+            location: '',
+            uod: '',
+            details: '',
+            cadets: '',
+            primary: ''
+          };
+          let current = '';
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (/^\[Location\]/i.test(line)) { current = 'location'; continue; }
+            if (/^\[UOD\]/i.test(line)) { current = 'uod'; continue; }
+            if (/^\[Details\]/i.test(line)) { current = 'details'; continue; }
+            if (/^\[Cadets\]/i.test(line)) { current = 'cadets'; continue; }
+            if (/^\[Primary AM\]/i.test(line)) { current = 'primary'; continue; }
+            if (!data.title) { data.title = line; continue; }
+            if (!data.subtitle) { data.subtitle = line; continue; }
+            if (current && data[current] === '') { data[current] = line; continue; }
+          }
           let html = '<div style="padding:18px 24px;background:#eef6ff;border-radius:8px;border:2px solid #003ab8;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:8px;">';
-          if (lines[0]) html += `<div style='font-size:1.2em;font-weight:700;color:#003ab8;margin-bottom:6px;'>${lines[0]}</div>`;
-          if (lines[1]) html += `<div style='font-weight:600;color:#001489;'>${lines[1]}</div>`;
-          if (lines[2]) html += `<div style='color:#003ab8;'>${lines[2]}</div>`;
-          if (lines[3]) html += `<div style='font-weight:600;color:#FFCD00;'>${lines[3]}</div>`;
-          if (lines[4]) html += `<div style='margin:8px 0;color:#333;'>${lines[4]}</div>`;
-          if (lines[5]) html += `<div style='font-weight:600;color:#003ab8;'>${lines[5]}</div>`;
-          if (lines[6]) html += `<div style='color:#003ab8;'>${lines[6]}</div>`;
-          if (lines[7]) html += `<div style='color:#003ab8;'>${lines[7]}</div>`;
+          if (data.title) html += `<div style='font-size:1.2em;font-weight:700;color:#003ab8;margin-bottom:6px;'>${data.title}</div>`;
+          if (data.subtitle) html += `<div style='font-weight:600;color:#001489;'>${data.subtitle}</div>`;
+          if (data.location) html += `<div style='color:#003ab8;'><b>Location:</b> ${data.location}</div>`;
+          if (data.uod) html += `<div style='font-weight:600;color:#FFCD00;'><b>UOD:</b> ${data.uod}</div>`;
+          if (data.details) html += `<div style='margin:8px 0;color:#333;'><b>Details:</b> ${data.details}</div>`;
+          if (data.cadets) html += `<div style='font-weight:600;color:#003ab8;'><b>Cadets:</b> ${data.cadets}</div>`;
+          if (data.primary) html += `<div style='color:#003ab8;'><b>Primary AM:</b> ${data.primary}</div>`;
           html += '</div>';
           return html;
         }
