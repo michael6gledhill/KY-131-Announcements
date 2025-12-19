@@ -27,6 +27,19 @@
 <body>
   <div class="container">
     <h1>Drag & Drop Template Editor</h1>
+    <div class="css-editor" id="formattingSection">
+      <h2 style="margin-top:0;color:#001489;">Global Formatting</h2>
+      <label>Primary Color: <input type="color" id="primaryColor" value="#001489"></label>
+      <label>Accent Color: <input type="color" id="accentColor" value="#FFCD00"></label>
+      <label>Font Family:
+        <select id="fontFamily">
+          <option value="Ubuntu,Arial,sans-serif">Ubuntu, Arial, sans-serif</option>
+          <option value="Arial,sans-serif">Arial, sans-serif</option>
+          <option value="Georgia,serif">Georgia, serif</option>
+        </select>
+      </label>
+      <button id="applyFormatting" style="margin-left:16px;background:#003ab8;color:#fff;font-weight:700;padding:6px 18px;border:none;border-radius:6px;cursor:pointer;">Apply</button>
+    </div>
     <h2>Available Templates</h2>
     <div class="templates-list" id="templatesList"></div>
     <h2>Bace.html Preview (Drag templates here)</h2>
@@ -40,7 +53,12 @@
       { name: 'No Meeting Highlight', file: 'templates/template4.html' },
       { name: 'General Info Card', file: 'templates/template5.html' },
       { name: 'Opportunity Card', file: 'templates/template6.html' },
-      { name: 'Wing Announcement Card', file: 'templates/template7.html' }
+      { name: 'Wing Announcement Card', file: 'templates/template7.html' },
+      { name: 'Divider: Upcoming Squadron Meetings', file: 'templates/template-divider-meetings.html' },
+      { name: 'Divider: General Squadron Information', file: 'templates/template-divider-general.html' },
+      { name: 'Divider: Ongoing Opportunities', file: 'templates/template-divider-opportunities.html' },
+      { name: 'Divider: Wing & Higher Command Announcements', file: 'templates/template-divider-wing.html' },
+      { name: 'Divider: Footer', file: 'templates/template-divider-footer.html' }
     ];
     // Load template HTML via fetch
     async function fetchTemplate(file) {
@@ -77,19 +95,77 @@
       const block = document.createElement('div');
       block.className = 'block';
       block.innerHTML = `<span style="font-weight:600;color:#003ab8;">${name}</span><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button><div class="block-content">${html}</div>`;
-      // Edit button
+      // Edit button (text/link only)
       block.querySelector('.edit-btn').onclick = function() {
         if (block.classList.contains('editing')) return;
         block.classList.add('editing');
         const contentDiv = block.querySelector('.block-content');
-        const oldHTML = contentDiv.innerHTML;
-        contentDiv.innerHTML = `<textarea class="block-edit">${oldHTML.replace(/</g,'&lt;')}</textarea><button class="edit-btn save-edit">Save</button>`;
-        contentDiv.querySelector('.save-edit').onclick = function() {
-          const newHTML = contentDiv.querySelector('.block-edit').value.replace(/&lt;/g,'<');
-          contentDiv.innerHTML = newHTML;
+        // Parse for text and links
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = contentDiv.innerHTML;
+        let inputs = [];
+        // Replace text nodes with input fields
+        function walk(node) {
+          if (node.nodeType === 3) { // text
+            if (node.textContent.trim()) {
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.value = node.textContent;
+              input.style.margin = '2px 0';
+              input.style.width = '98%';
+              inputs.push({input, node});
+              node.parentNode.insertBefore(input, node);
+              node.parentNode.removeChild(node);
+            }
+          } else if (node.nodeType === 1) {
+            if (node.tagName === 'A') {
+              // Link editor
+              const hrefInput = document.createElement('input');
+              hrefInput.type = 'text';
+              hrefInput.value = node.getAttribute('href');
+              hrefInput.style.margin = '2px 0';
+              hrefInput.style.width = '98%';
+              inputs.push({input: hrefInput, node, attr: 'href'});
+              node.parentNode.insertBefore(hrefInput, node);
+            }
+            Array.from(node.childNodes).forEach(walk);
+          }
+        }
+        Array.from(tempDiv.childNodes).forEach(walk);
+        // Save button
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'edit-btn save-edit';
+        saveBtn.textContent = 'Save';
+        saveBtn.onclick = function() {
+          // Update text and links
+          inputs.forEach(({input, node, attr}) => {
+            if (attr === 'href') node.setAttribute('href', input.value);
+            else node.textContent = input.value;
+          });
+          contentDiv.innerHTML = tempDiv.innerHTML;
           block.classList.remove('editing');
         };
+        tempDiv.appendChild(saveBtn);
+        contentDiv.innerHTML = '';
+        contentDiv.appendChild(tempDiv);
       };
+          // Formatting section logic
+          document.getElementById('applyFormatting').onclick = function() {
+            const primary = document.getElementById('primaryColor').value;
+            const accent = document.getElementById('accentColor').value;
+            const font = document.getElementById('fontFamily').value;
+            document.body.style.setProperty('--primary-color', primary);
+            document.body.style.setProperty('--accent-color', accent);
+            document.body.style.fontFamily = font;
+            // Optionally update preview blocks
+            Array.from(document.querySelectorAll('.block-content')).forEach(div => {
+              div.querySelectorAll('[style]').forEach(el => {
+                if (el.style.color) el.style.color = primary;
+                if (el.style.borderColor) el.style.borderColor = accent;
+                if (el.style.fontFamily) el.style.fontFamily = font;
+              });
+            });
+          };
       // Delete button
       block.querySelector('.delete-btn').onclick = function() {
         block.remove();
