@@ -1,0 +1,50 @@
+[
+    {
+        "name": "template-meeting-with-button-and-primary-cadet/AM",
+        "template_type": "meeting-with-button-and-primary-cadet/AM",
+        "subject": "[Announcement] {title}",
+        "body_html_path": "templates/template1.html"
+    },
+    {
+        "name": "template-meeting-with-button-no-primary-cadet/AM",
+        "template_type": "meeting-with-button-no-primary-cadet/AM",
+        "subject": "[Announcement] {title}",
+        "body_html_path": "templates/template2.html"
+    },
+    {
+        "name": "template-meeting-no-primary-cadet/AM",
+        "template_type": "meeting-with-no-button-no-primary-cadet/AM",
+        "subject": "[Announcement] {title}",
+        "body_html_path": "templates/template2.html"
+    },
+    {
+        "name": "meeting-card",
+        "template_type": "meeting",
+        "subject": "[Meeting] {title}",
+        "body_html_path": "templates/template3.html"
+    },
+    {
+        "name": "no-meeting-highlight",
+        "template_type": "no-meeting",
+        "subject": "[No Meeting] {title}",
+        "body_html_path": "templates/template4.html"
+    },
+    {
+        "name": "general-info-card",
+        "template_type": "general-info",
+        "subject": "[General Info] {title}",
+        "body_html_path": "templates/template5.html"
+    },
+    {
+        "name": "opportunity-card",
+        "template_type": "opportunity",
+        "subject": "[Opportunity] {title}",
+        "body_html_path": "templates/template6.html"
+    },
+    {
+        "name": "wing-announcement-card",
+        "template_type": "wing-announcement",
+        "subject": "[Wing Announcement] {title}",
+        "body_html_path": "templates/template7.html"
+    }
+]

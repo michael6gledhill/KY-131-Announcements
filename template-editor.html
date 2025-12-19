@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template Drag-and-Drop Editor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Ubuntu', Arial, sans-serif; background: #f4f8ff; margin: 0; padding: 0; }
+    .container { max-width: 1200px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.10); padding: 32px; }
+    h1 { color: #001489; text-align: center; }
+    .templates-list, .bace-preview { min-height: 100px; padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+    .templates-list { background: #f9f9f9; border: 2px dashed #003ab8; display: flex; flex-wrap: wrap; gap: 16px; }
+    .template-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 18px; cursor: grab; min-width: 180px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: box-shadow 0.2s; }
+    .template-item:active { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .bace-preview { background: #f5faff; border: 2px solid #FFCD00; min-height: 200px; }
+    .block { background: #fff; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; padding: 16px; position: relative; cursor: move; }
+    .block .edit-btn, .block .delete-btn { position: absolute; top: 8px; font-size: 0.9em; border: none; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+    .block .edit-btn { right: 48px; background: #003ab8; color: #fff; }
+    .block .delete-btn { right: 8px; background: #BA0C2F; color: #fff; }
+    .block.editing { border: 2px solid #003ab8; background: #eef6ff; }
+    .save-btn { background: #003ab8; color: #fff; font-weight: 700; padding: 12px 32px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; display: block; margin: 32px auto 0 auto; }
+    textarea.block-edit { width: 100%; height: 120px; font-size: 1em; font-family: monospace; border-radius: 6px; border: 1px solid #bbb; margin-top: 8px; }
+    .drag-over { border: 2px dashed #28a745 !important; background: #eaffea !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Drag & Drop Template Editor</h1>
+    <h2>Available Templates</h2>
+    <div class="templates-list" id="templatesList"></div>
+    <h2>Bace.html Preview (Drag templates here)</h2>
+    <div class="bace-preview" id="bacePreview"></div>
+    <button class="save-btn" id="saveBtn">Export to Bace.html</button>
+  </div>
+  <script>
+    // List of templates (update if you add more)
+    const templates = [
+      { name: 'Meeting Card', file: 'templates/template3.html' },
+      { name: 'No Meeting Highlight', file: 'templates/template4.html' },
+      { name: 'General Info Card', file: 'templates/template5.html' },
+      { name: 'Opportunity Card', file: 'templates/template6.html' },
+      { name: 'Wing Announcement Card', file: 'templates/template7.html' }
+    ];
+    // Load template HTML via fetch
+    async function fetchTemplate(file) {
+      const res = await fetch(file);
+      return await res.text();
+    }
+    // Render template list
+    const templatesList = document.getElementById('templatesList');
+    templates.forEach((tpl, idx) => {
+      const div = document.createElement('div');
+      div.className = 'template-item';
+      div.draggable = true;
+      div.textContent = tpl.name;
+      div.dataset.idx = idx;
+      div.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', idx);
+      });
+      templatesList.appendChild(div);
+    });
+    // Drag and drop for bace preview
+    const bacePreview = document.getElementById('bacePreview');
+    bacePreview.addEventListener('dragover', e => { e.preventDefault(); bacePreview.classList.add('drag-over'); });
+    bacePreview.addEventListener('dragleave', e => { bacePreview.classList.remove('drag-over'); });
+    bacePreview.addEventListener('drop', async e => {
+      e.preventDefault();
+      bacePreview.classList.remove('drag-over');
+      const idx = e.dataTransfer.getData('text/plain');
+      const tpl = templates[idx];
+      const html = await fetchTemplate(tpl.file);
+      addBlock(html, tpl.name);
+    });
+    // Add block to preview
+    function addBlock(html, name) {
+      const block = document.createElement('div');
+      block.className = 'block';
+      block.innerHTML = `<span style="font-weight:600;color:#003ab8;">${name}</span><button class="edit-btn">Edit</button><button class="delete-btn">Delete</button><div class="block-content">${html}</div>`;
+      // Edit button
+      block.querySelector('.edit-btn').onclick = function() {
+        if (block.classList.contains('editing')) return;
+        block.classList.add('editing');
+        const contentDiv = block.querySelector('.block-content');
+        const oldHTML = contentDiv.innerHTML;
+        contentDiv.innerHTML = `<textarea class="block-edit">${oldHTML.replace(/</g,'&lt;')}</textarea><button class="edit-btn save-edit">Save</button>`;
+        contentDiv.querySelector('.save-edit').onclick = function() {
+          const newHTML = contentDiv.querySelector('.block-edit').value.replace(/&lt;/g,'<');
+          contentDiv.innerHTML = newHTML;
+          block.classList.remove('editing');
+        };
+      };
+      // Delete button
+      block.querySelector('.delete-btn').onclick = function() {
+        block.remove();
+      };
+      // Drag to reorder
+      block.draggable = true;
+      block.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/block', 'block');
+        e.dataTransfer.setData('block-idx', Array.from(bacePreview.children).indexOf(block));
+        block.classList.add('dragging');
+      });
+      block.addEventListener('dragend', e => { block.classList.remove('dragging'); });
+      block.addEventListener('dragover', e => { e.preventDefault(); block.classList.add('drag-over'); });
+      block.addEventListener('dragleave', e => { block.classList.remove('drag-over'); });
+      block.addEventListener('drop', e => {
+        e.preventDefault();
+        block.classList.remove('drag-over');
+        const dragging = document.querySelector('.block.dragging');
+        if (dragging && dragging !== block) {
+          bacePreview.insertBefore(dragging, block);
+        }
+      });
+      bacePreview.appendChild(block);
+    }
+    // Export to Bace.html
+    document.getElementById('saveBtn').onclick = function() {
+      let html = '';
+      Array.from(bacePreview.children).forEach(block => {
+        const content = block.querySelector('.block-content').innerHTML;
+        html += `\n${content}\n`;
+      });
+      // Download as Bace.html
+      const blob = new Blob([
+        '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>Bace.html</title>\n<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">\n</head>\n<body style="font-family: Ubuntu, Arial, sans-serif; background: #f4f8ff; padding: 32px;">',
+        html,
+        '</body>\n</html>'
+      ], {type: 'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Bace.html';
+      a.click();
+    };
+  </script>
+</body>
+</html>
