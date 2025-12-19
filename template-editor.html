@@ -50,11 +50,13 @@
     <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:2000;align-items:center;justify-content:center;">
       <div id="editModalContent" style="background:#fff;padding:32px 24px;border-radius:12px;max-width:420px;width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
         <h2 id="editModalTitle" style="margin-top:0;color:#003ab8;font-size:1.2em;"></h2>
-        <form id="editForm"></form>
-        <div style="margin-top:18px;text-align:right;">
-          <button type="button" id="editCancelBtn" style="margin-right:12px;background:#eee;color:#003ab8;font-weight:600;padding:6px 18px;border:none;border-radius:6px;cursor:pointer;">Cancel</button>
-          <button type="submit" id="editSaveBtn" style="background:#003ab8;color:#fff;font-weight:700;padding:6px 18px;border:none;border-radius:6px;cursor:pointer;">Save</button>
-        </div>
+        <form id="editForm">
+          <div id="editFormFields"></div>
+          <div style="margin-top:18px;text-align:right;">
+            <button type="button" id="editCancelBtn" style="margin-right:12px;background:#eee;color:#003ab8;font-weight:600;padding:6px 18px;border:none;border-radius:6px;cursor:pointer;">Cancel</button>
+            <button type="submit" id="editSaveBtn" style="background:#003ab8;color:#fff;font-weight:700;padding:6px 18px;border:none;border-radius:6px;cursor:pointer;">Save</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -210,8 +212,8 @@
     const editModal = document.getElementById('editModal');
     const editModalTitle = document.getElementById('editModalTitle');
     const editForm = document.getElementById('editForm');
-    const editCancelBtn = document.getElementById('editCancelBtn');
-    editCancelBtn.onclick = () => { editModal.style.display = 'none'; };
+    const editFormFields = document.getElementById('editFormFields');
+    // Cancel button event must be set after form is rendered
 
     function openEditModal(block, name) {
       // Parse current block content for fields
@@ -242,11 +244,13 @@
         ];
       }
       editModalTitle.textContent = `Edit ${name}`;
-      editForm.innerHTML = '';
+      editFormFields.innerHTML = '';
       fields.forEach(f => {
-        editForm.innerHTML += `<label style='display:block;margin:10px 0 4px 0;font-weight:600;'>${f.label}</label><input type='text' name='${f.name}' value="${f.value.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style='width:100%;padding:6px 8px;border-radius:5px;border:1px solid #bbb;font-size:1em;'>`;
+        editFormFields.innerHTML += `<label style='display:block;margin:10px 0 4px 0;font-weight:600;'>${f.label}</label><input type='text' name='${f.name}' value="${f.value.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style='width:100%;padding:6px 8px;border-radius:5px;border:1px solid #bbb;font-size:1em;'>`;
       });
       editModal.style.display = 'flex';
+      // Set cancel button event
+      document.getElementById('editCancelBtn').onclick = () => { editModal.style.display = 'none'; };
       editForm.onsubmit = function(ev) {
         ev.preventDefault();
         const formData = new FormData(editForm);
