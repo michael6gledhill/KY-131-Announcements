@@ -90,13 +90,13 @@
             if (!data.title) { data.title = line; continue; }
             if (!data.subtitle) { data.subtitle = line; continue; }
           }
-          let html = '<div style="padding:18px 24px;background:#eef6ff;border-radius:8px;border:2px solid #003ab8;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:8px;">';
-          if (data.title) html += `<div style='font-size:1.2em;font-weight:700;color:#003ab8;margin-bottom:6px;'>${data.title}</div>`;
-          if (data.location) html += `<div style='color:#003ab8;'><b>[Location]</b> ${data.location}</div>`;
-          if (data.uod) html += `<div style='font-weight:600;color:#FFCD00;'><b>[UOD]</b> ${data.uod}</div>`;
-          if (data.details) html += `<div style='margin:8px 0;color:#333;'><b>[Details]</b> ${data.details}</div>`;
-          if (data.cadets) html += `<div style='font-weight:600;color:#003ab8;'><b>[Cadets]</b> ${data.cadets}</div>`;
-          if (data.primary) html += `<div style='color:#003ab8;'><b>[Primary AM]</b> ${data.primary}</div>`;
+          let html = '<div style="padding:22px 28px;background:#fafdff;border-radius:12px;border:2px solid #003ab8;box-shadow:0 4px 16px rgba(0,0,0,0.10);margin-bottom:14px;">';
+          if (data.title) html += `<div style='font-size:1.3em;font-weight:800;color:#003ab8;margin-bottom:10px;letter-spacing:0.5px;'>${data.title}</div>`;
+          if (data.location) html += `<div style='margin-bottom:6px;display:flex;align-items:center;gap:8px;'><span style="font-size:1.1em;">📍</span><span style='color:#003ab8;font-weight:600;'>[Location]</span> <span style='color:#222;'>${data.location}</span></div>`;
+          if (data.uod) html += `<div style='margin-bottom:6px;display:flex;align-items:center;gap:8px;'><span style="font-size:1.1em;">🎽</span><span style='color:#FFCD00;font-weight:700;'>[UOD]</span> <span style='color:#444;'>${data.uod}</span></div>`;
+          if (data.details) html += `<div style='margin-bottom:6px;display:flex;align-items:center;gap:8px;'><span style="font-size:1.1em;">📝</span><span style='color:#003ab8;font-weight:600;'>[Details]</span> <span style='color:#333;'>${data.details}</span></div>`;
+          if (data.cadets) html += `<div style='margin-bottom:6px;display:flex;align-items:center;gap:8px;'><span style="font-size:1.1em;">👤</span><span style='color:#003ab8;font-weight:600;'>[Cadets]</span> <span style='color:#003ab8;'>${data.cadets}</span></div>`;
+          if (data.primary) html += `<div style='margin-bottom:6px;display:flex;align-items:center;gap:8px;'><span style="font-size:1.1em;">⭐</span><span style='color:#003ab8;font-weight:600;'>[Primary AM]</span> <span style='color:#003ab8;'>${data.primary}</span></div>`;
           html += '</div>';
           return html;
         }
