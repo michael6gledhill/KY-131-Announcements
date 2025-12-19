@@ -264,7 +264,7 @@
         } else {
           block.querySelector('.block-content').innerHTML = formData.get('html');
         }
-        editModal.style.display = 'none';
+        setTimeout(() => { editModal.style.display = 'none'; }, 10);
       };
     }
 
