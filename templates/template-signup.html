@@ -1,8 +1,57 @@
-<!-- Open Signups Template -->
-<div style="background: linear-gradient(135deg, #e0ffe0 0%, #f9fff9 100%); border-left: 5px solid #28a745; padding: 25px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.10);">
-  <h3 style="color: #28a745; font-size: 1.3em; font-weight: 700; margin: 0 0 15px 0;">[Signup Title]</h3>
-  <p style="margin: 0 0 15px 0;">[Signup Description]</p>
-  <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-    <a href="[Signup Link]" target="_blank" style="display: inline-block; padding: 12px 24px; font-size: 0.95em; font-weight: 600; text-decoration: none; border-radius: 6px; cursor: pointer; border: none; text-align: center; font-family: 'Ubuntu', Arial, sans-serif; background: linear-gradient(135deg, #28a745 0%, #5be584 100%); color: #fff; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);">Sign Up Now</a>
-  </div>
-</div>
+
+<?php
+$config = json_decode('{"formTitle": "Sign Up", "fields": [{"name": "name", "label": "Full Name", "type": "text", "required": true}, {"name": "email", "label": "Email Address", "type": "email", "required": true}, {"name": "password", "label": "Password", "type": "password", "required": true}]}', true);
+$success = false;
+$errors = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($config['fields'] as $field) {
+        $name = $field['name'];
+        if ($field['required'] && empty($_POST[$name])) {
+            $errors[$name] = $field['label'] . ' is required.';
+        }
+    }
+    if (empty($errors)) {
+        $success = true;
+        // Here you would normally save the data or send an email
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><?php echo htmlspecialchars($config['formTitle']); ?></title>
+</head>
+<body style="background:#f7f7f7;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+    <div style="background:#fff;padding:32px 24px 24px 24px;border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,0.08);min-width:320px;max-width:400px;width:100%;">
+        <h2 style="margin-top:0;text-align:center;color:#333;font-size:2em;letter-spacing:1px;"> <?php echo htmlspecialchars($config['formTitle']); ?> </h2>
+        <div style="text-align:center;margin-bottom:18px;">
+            <a href="signin.php" style="color:#1976d2;text-decoration:underline;font-weight:500;margin-right:18px;">Sign In</a>
+            <a href="edits.php" style="color:#1976d2;text-decoration:underline;font-weight:500;">Edits Page</a>
+        </div>
+        <?php if ($success): ?>
+            <div style="background:#e6ffe6;color:#2d7a2d;padding:12px 16px;border-radius:6px;text-align:center;margin-bottom:16px;">Thank you for signing up!</div>
+        <?php else: ?>
+        <form method="post" style="display:flex;flex-direction:column;gap:16px;">
+            <?php foreach ($config['fields'] as $field): ?>
+                <div style="display:flex;flex-direction:column;">
+                    <label for="<?php echo $field['name']; ?>" style="margin-bottom:6px;color:#444;font-weight:500;"> <?php echo htmlspecialchars($field['label']); ?> </label>
+                    <input 
+                        type="<?php echo $field['type']; ?>" 
+                        name="<?php echo $field['name']; ?>" 
+                        id="<?php echo $field['name']; ?>" 
+                        value="<?php echo isset($_POST[$field['name']]) ? htmlspecialchars($_POST[$field['name']]) : ''; ?>" 
+                        style="padding:10px 12px;border:1px solid #ccc;border-radius:5px;font-size:1em;outline:none;transition:border 0.2s;"
+                        <?php if ($field['required']) echo 'required'; ?>
+                    >
+                    <?php if (isset($errors[$field['name']])): ?>
+                        <span style="color:#d32f2f;font-size:0.95em;margin-top:4px;"> <?php echo $errors[$field['name']]; ?> </span>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+            <button type="submit" style="background:#1976d2;color:#fff;padding:12px 0;border:none;border-radius:5px;font-size:1.1em;font-weight:600;cursor:pointer;transition:background 0.2s;">Sign Up</button>
+        </form>
+        <?php endif; ?>
+    </div>
+</body>
+</html>
